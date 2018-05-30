@@ -25,7 +25,7 @@ server <- function(input,output){
     temperaturas <- read.csv("temperaturas.csv",sep="\t")
     temperaturas <- mutate(temperaturas, fecha=paste(dia,mes,anio, sep="-"))
     temperaturas <- mutate(temperaturas,fecha=dmy(temperaturas$fecha))
-    temperaturas %>% filter(nroEstacion==input$est) %>% filter(anio %in% input$year) %>%
+    temperaturas %>% filter(nroEstacion==input$est) %>% filter(between(anio,min(input$year),max(input$year))) %>%
       ggplot(aes(x=fecha,y=tmin,colour=as.factor(anio))) + geom_point()
     
     
