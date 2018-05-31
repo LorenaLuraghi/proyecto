@@ -32,7 +32,7 @@ server <- function(input,output){
     temperaturas <- mutate(temperaturas,fecha=dmy(temperaturas$fecha))
     temperaturas %>% filter(nroEstacion==input$est) %>% filter(between(anio,min(input$year),max(input$year))) %>%
       ggplot(aes(x=fecha,y=tmin,colour=as.factor(anio))) + geom_point()+geom_hline(yintercept = input$m, colour="red",size=2)+
-      ggtitle(paste("Temperaturas de la estación N°",input$est))
+      ggtitle(paste("Temperaturas de la estación N°:",input$est))
     
     
     
