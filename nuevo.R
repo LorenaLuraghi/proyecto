@@ -2,10 +2,6 @@ library(shiny)
 library(tidyverse)
 library(lubridate)
 
-temperaturas <- read.csv("temperaturas.csv",sep="\t")
-temperaturas <- mutate(temperaturas, fecha=paste(dia,mes,anio, sep="-"))
-temperaturas <- mutate(temperaturas,fecha=dmy(temperaturas$fecha))
-
 
 ui <- fluidPage(
   titlePanel("Temperaturas del Uru"),
@@ -43,11 +39,8 @@ server <- function(input,output){
     
     ggtitle(paste("Temperaturas de la estación N°:",input$est))
     
+  })
+}
     
     
-    
-    
-    
-    
-    
-    shinyApp(ui, server)
+shinyApp(ui, server)
