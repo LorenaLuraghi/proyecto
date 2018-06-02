@@ -1,0 +1,21 @@
+---
+title: "introd"
+author: "Luraghi-Rodriguez"
+date: "June 1, 2018"
+output: pdf_document
+---
+
+
+## INTRODUCCION
+
+#Acerce de los datos:
+
+La base de datos cuenta con.... observaciones, las mismas corresponden a los registros de temperaturas mínimas diarias de 14 estaciones ubicadas a lo largo del territorio uruguyo para el periodo comprendido entre los años.......
+
+#Objetivo
+
+Realizar un análisis dinámico de nuestra base de datos para conocerlos a fondo y contribuir con la tesis de Lore y Mathi (Modelización de temperaturas extremas.....)
+
+
+
+
