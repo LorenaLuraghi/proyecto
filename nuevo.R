@@ -2,6 +2,7 @@ library(shiny)
 library(tidyverse)
 library(lubridate)
 library(rmarkdown)
+library(leaflet)
 
 
 ui <- navbarPage(
@@ -51,7 +52,21 @@ ui <- navbarPage(
              ),
              column(3,
                     img(class="img-polaroid",
-                        src=paste0("https://media.elobservador.com.uy/adjuntos/181/imagenes/018/126/0018126280.jpeg")))))
+                        src=paste0("https://media.elobservador.com.uy/adjuntos/181/imagenes/018/126/0018126280.jpeg"))))),
+  
+  
+  tabPanel("Mapa",type="tabset",
+           sidebarLayout(position = "right",
+                         sidebarPanel(
+                           
+                           sliderInput(inputId = "esta",
+                                       label = "Número de estación",
+                                       min = 1,
+                                       max = 26,
+                                       value=2)         ),
+           mainPanel(leafletOutput("mymap")))
+           
+  )
 )
 
 
@@ -74,6 +89,19 @@ server <- function(input,output,session){
   
     
     })
+  
+  
+  
+  
+  output$mymap <- renderLeaflet({
+    temperaturas <- read.csv("temperaturas.csv",sep="\t")
+    temperaturas <- mutate(temperaturas, fecha=paste(dia,mes,anio, sep="-"))
+    temperaturas <- mutate(temperaturas,fecha=dmy(temperaturas$fecha))
+    
+    temperaturas %>% filter(nroEstacion==input$esta) %>% 
+    leaflet() %>%  addTiles() %>% addCircles(lng = ~lon, lat = ~lat, color = "yellow")
+    
+  })
 }
 
 
