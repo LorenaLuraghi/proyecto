@@ -7,6 +7,16 @@ library(rmarkdown)
 ui <- navbarPage(
   title="Temperaturas mínimas del Uruguay",
   
+  tabPanel("Base de datos" , type= "tabset",
+           fluidRow(
+             column(12,
+                    dataTableOutput('table')
+             )
+           )
+           
+           
+           ),
+  
   tabPanel("Visualizaciones",type="tabset",
            sidebarLayout(position = "right",
                          sidebarPanel(
@@ -57,6 +67,13 @@ server <- function(input,output,session){
       ggtitle(paste("Temperaturas de la estación N°:",input$est))
     
   })
+  
+  output$table <- renderDataTable({ temperaturas <- read.csv("temperaturas.csv",sep="\t")
+  temperaturas <- mutate(temperaturas, fecha=paste(dia,mes,anio, sep="-"))
+  temperaturas <- mutate(temperaturas,fecha=dmy(temperaturas$fecha))
+  
+    
+    })
 }
 
 
