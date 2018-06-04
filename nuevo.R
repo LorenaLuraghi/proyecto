@@ -55,15 +55,13 @@ ui <- navbarPage(
                         src=paste0("https://media.elobservador.com.uy/adjuntos/181/imagenes/018/126/0018126280.jpeg"))))),
   
   
-  tabPanel("Mapa",type="tabset",
+  tabPanel("Distancias de estaciones al aeropuerto de Carrasco",type="tabset",
            sidebarLayout(position = "right",
                          sidebarPanel(
                            
-                           sliderInput(inputId = "esta",
-                                       label = "Número de estación",
-                                       min = 1,
-                                       max = 26,
-                                       value=2)         ),
+                           selectInput(inputId = "esta",
+                                       label = "Estaciones con distancia:",
+                                       c("Cerca","Media","Lejos"))         ),
            mainPanel(leafletOutput("mymap")))
            
   )
@@ -98,8 +96,16 @@ server <- function(input,output,session){
     temperaturas <- mutate(temperaturas, fecha=paste(dia,mes,anio, sep="-"))
     temperaturas <- mutate(temperaturas,fecha=dmy(temperaturas$fecha))
     
-    temperaturas %>% filter(nroEstacion==input$esta) %>% 
-    leaflet() %>%  addTiles() %>% addCircles(lng = ~lon, lat = ~lat, color = "yellow")
+    if(input$esta=="Cerca") { temperaturas %>% filter(nroEstacion==c(5,24,18,25,2,1,13,8,16,7)) %>% 
+        leaflet() %>%  addTiles() %>% addCircles(lng = ~lon, lat = ~lat,label=~nroEstacion, color = "green")  }
+    else if (input$esta=="Media") { temperaturas %>% filter(nroEstacion==c(11,10,21,22,6,20,23)) %>% 
+        leaflet() %>%  addTiles() %>% addCircles(lng = ~lon, lat = ~lat,color = "yellow") }
+    else {temperaturas %>% filter(nroEstacion==c(14,12,19,9,17,26,3,15,4)) %>% 
+        leaflet() %>%  addTiles() %>% addCircles(lng = ~lon, lat = ~lat, color = "red")
+      
+    }
+    
+    
     
   })
 }
