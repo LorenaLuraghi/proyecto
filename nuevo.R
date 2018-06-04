@@ -52,17 +52,17 @@ ui <- navbarPage(
              ),
              column(3,
                     img(class="img-polaroid",
-                        src=paste0("https://media.elobservador.com.uy/adjuntos/181/imagenes/018/126/0018126280.jpeg"))))),
+                        src="Puerto-vallarta.jpg")))),
   
   
   tabPanel("Distancias de estaciones al aeropuerto de Carrasco",type="tabset",
            sidebarLayout(position = "right",
                          sidebarPanel(
                            
-                           selectInput(inputId = "esta",
+                           radioButtons(inputId = "esta",
                                        label = "Estaciones con distancia:",
                                        c("Cerca","Media","Lejos"))         ),
-           mainPanel(leafletOutput("mymap")))
+           mainPanel(leafletOutput("mymap",height = 1000)))
            
   )
 )
