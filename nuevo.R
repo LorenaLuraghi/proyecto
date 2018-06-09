@@ -29,11 +29,13 @@ ui <- navbarPage(
            sidebarLayout(position = "right",
                          sidebarPanel(
                            
-                           sliderInput(inputId = "est",
+                           selectInput(inputId = "est",
                                        label = "Número de estación",
-                                       min = 1,
-                                       max = 26,
-                                       value=2),
+                                       choices=list("E1"=1, "Las Brujas"=2, "E3"=3, "E4"=4, "E5"=5,"E6"=6,"e7"=7,
+"e8"=8,"e9"=9, "e10"=10,"e11"=11,"e12"=12,"e13"=13,"e14"=14,"e15"=15,"e16"=16,"e17"=17,"e18"=18,"e19"=19,"e20"=20,"e21"=21,
+"e22"=22,"e23"=23, "e24"=24,"e25"=25,"e26"=26),
+multiple = TRUE
+                           ),
                            sliderInput(inputId = "year",
                                        label = "Año",
                                        min =2004,
@@ -95,10 +97,11 @@ server <- function(input,output,session){
     temperaturas <- read.csv("temperaturas.csv",sep="\t")
     temperaturas <- mutate(temperaturas, fecha=paste(dia,mes,anio, sep="-"))
     temperaturas <- mutate(temperaturas,fecha=dmy(temperaturas$fecha))
-    temperaturas %>% filter(nroEstacion==input$est) %>% filter(between(anio,min(input$year),max(input$year))) %>%
+    
+    temperaturas %>% filter(nroEstacion %in% c(input$est)) %>% filter(between(anio,min(input$year),max(input$year))) %>%
       ggplot(aes(x=fecha,y=tmin,colour=as.factor(anio))) + geom_point()+geom_hline(yintercept = input$m, colour="red",size=2)+
       
-      ggtitle(paste("Temperaturas de la estación N°:",input$est))
+      facet_wrap(~nroEstacion)
     
   })
   
