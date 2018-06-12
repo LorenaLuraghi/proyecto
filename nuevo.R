@@ -50,41 +50,43 @@ ui <- navbarPage(
   
   
   tabPanel("Distancias de estaciones al aeropuerto de Carrasco",type="tabset",
-           sidebarLayout(position = "right",
-                         sidebarPanel(
-                           
-                           selectInput(inputId = "estac",
-                                       label = "Número de estación",
-                                       choices=list("E1"=1, "Las Brujas"=2, "E3"=3, "E4"=4, "E5"=5,"E6"=6,"e7"=7,
-                                                    "e8"=8,"e9"=9, "e10"=10,"e11"=11,"e12"=12,"e13"=13,"e14"=14,"e15"=15,"e16"=16,"e17"=17,"e18"=18,"e19"=19,"e20"=20,"e21"=21,
-                                                    "e22"=22,"e23"=23, "e24"=24,"e25"=25,"e26"=26),
-                                       multiple = TRUE
-                           ),
-                           
-                           
-                           
-                           
-                           sliderInput(inputId = "year",
-                                       label = "Año",
-                                       min =2004,
-                                       max = 2015,
-                                       value =c( 2002:2004)
-                           ),
-                           sliderInput(inputId ="m",
-                                       label = "superior",
-                                       
-                                       min = -10,
-                                       max=30,
-                                       value=12,
-                                       step= 0.2 )
-                         ),
-                         
-                         mainPanel( fluidRow(
-                           column(10,leafletOutput("mymap",height = 500))),
-                           
-                           fluidRow(
-                             column(11, plotOutput("serie")  ))
-                         )
+           
+           fluidRow(column(8,leafletOutput("mymap",height = 500)),
+                    
+                    br(),
+                    
+                    column( 3,selectizeInput(inputId = "estac",
+                                             label = "Número de estación",
+                                             choices=list("E1"=1, "Las Brujas"=2, "E3"=3, "E4"=4, "E5"=5,"E6"=6,"e7"=7,
+                                                          "e8"=8,"e9"=9, "e10"=10,"e11"=11,"e12"=12,"e13"=13,"e14"=14,"e15"=15,"e16"=16,"e17"=17,"e18"=18,"e19"=19,"e20"=20,"e21"=21,
+                                                          "e22"=22,"e23"=23, "e24"=24,"e25"=25,"e26"=26),
+                                             selected = 2 ,
+                                             options = list(maxItems = 4L),
+                                             multiple = TRUE
+                    ),
+                    
+                    
+                    
+                    
+                    sliderInput(inputId = "year",
+                                label = "Año",
+                                min =2004,
+                                max = 2015,
+                                value =c( 2002:2004)
+                    ),
+                    sliderInput(inputId ="m",
+                                label = "superior",
+                                
+                                min = -10,
+                                max=30,
+                                value=12,
+                                step= 0.2 )
+                    )),
+           
+           
+           fluidRow(
+             
+             column(12, plotOutput("serie"))
            )),
   
   
@@ -111,11 +113,12 @@ server <- function(input,output,session){
     temperaturas <- read.csv("temperaturas.csv",sep="\t")
     temperaturas <- mutate(temperaturas, fecha=paste(dia,mes,anio, sep="-"))
     temperaturas <- mutate(temperaturas,fecha=dmy(temperaturas$fecha))
+    temperaturas <- mutate(temperaturas,Estacion= as.factor(temperaturas$nroEstacion))
     
-    temperaturas %>% filter(nroEstacion %in% c(input$estac)) %>% filter(between(anio,min(input$year),max(input$year))) %>%
-      ggplot(aes(x=fecha,y=tmin,colour=as.factor(anio))) + geom_point()+geom_hline(yintercept = input$m, colour="red",size=2)+
-      
-      facet_wrap(~nroEstacion)
+    temperaturas %>% filter(Estacion %in% c(input$estac)) %>% filter(between(anio,min(input$year),max(input$year))) %>% group_by(anio,mes,Estacion) %>%
+      slice(which.min(tmin)) %>%
+      ggplot(aes(x=fecha,y=tmin, color=Estacion)) + geom_line()+geom_hline(yintercept = input$m, colour="red",size=1)+
+      geom_vline(xintercept = 2005,colour="black", size=2)
     
   })
   
