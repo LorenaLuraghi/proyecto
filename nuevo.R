@@ -9,21 +9,34 @@ library(ggvis)
 library(raster)
 library(rgeos)
 library(rgdal)
+library(dplyr)
 
-
+temperaturas <- read.csv("temperaturas.csv",sep="\t")
+temperaturas <- mutate(temperaturas, fecha=paste(dia,mes,anio, sep="-"))
+temperaturas <- mutate(temperaturas,fecha=dmy(temperaturas$fecha))
+temperaturas <- subset(temperaturas, select = c(1,2,3,10,11) )
 
 ui <- navbarPage(
   title="Temperaturas mínimas del Uruguay",
   
   tabPanel("Base de datos" , type= "tabset",
            fluidRow(
-             column(12,
-                    dataTableOutput('table')
-             )
+             h4("Se  cuenta  con  una  base  de  datos compuesta  por  registros  diarios  de  temperaturas  mínimas  de  26  estaciones  meteorológicas  de  Uruguay  para  el  período  2002-2014.  Los  datos  están  comprendidos  entre  el  1º  de  enero  de  2002  y  el  
+                31  de  diciembre  de  2014,  lo  cual  implica  un  total  de  4.526  observaciones  por  estación."),
+             fluidRow(
+            column(4,
+                      selectInput("nroest",
+                                  "Número de estación:",
+                                  c("Todas",
+                                    unique(as.character(temperaturas$nroEstacion))))
+               )
+           ),
+           column(12,
+                  dataTableOutput('table')
            )
            
            
-  ),
+  )),
   
   
   tabPanel("Introducción",type="tabset",
@@ -106,9 +119,16 @@ server <- function(input,output,session){
     
   })
   
-  output$table <- renderDataTable({ temperaturas <- read.csv("temperaturas.csv",sep="\t")
+  output$table <- renderDataTable({ 
+  temperaturas <- read.csv("temperaturas.csv",sep="\t")
   temperaturas <- mutate(temperaturas, fecha=paste(dia,mes,anio, sep="-"))
   temperaturas <- mutate(temperaturas,fecha=dmy(temperaturas$fecha))
+  temperaturas <- subset(temperaturas, select = c(1,2,3,10,11) )
+  
+  if (input$nroest != "All") {
+    temperaturas <- temperaturas[temperaturas$nroEstacion == input$nroest,]
+  } 
+  temperaturas
   
   
   })
