@@ -1,0 +1,23 @@
+---
+title: "Metodologia"
+author: '-'
+date: "12 de junio de 2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+Las técnicas estándar de estimación de
+densidades ajustan bien donde los datos tienen mayor densidad, pero pueden tener sesgos importantes al estimar los extremos, es por esto que el desarrollo de la teoría de valores extremos, cuyo principal interés radica en modelar las colas de la distribución, ha recibido un fuerte impulso en las últimas décadas. Las aplicaciones de dicha teoría abarcan diversas ramas de las ciencias, principalmente ambientales, además de la ingeniería, las
+finanzas, entre otras.
+
+Nos interesa modelar temperaturas mínimas del Uruguay, sin embargo la teoría que utilizaremos se centra en la modelización de valores extremos máximos, por lo tanto procederemos a utilizar el valor opuesto de la variable que nos indica la temperatura mínima diaria.
+
+Dado el objetivo de la modelización, es de particular interés la información contenida en los eventos extremos, presentaremos dos enfoques distintos para trabajar con esta información.
+
+El primer método, y el mas tradicional, es el Método de Valores Extremos por Bloques, el cuál consiste en establecer como unidad o “bloque” un período de tiempo (por ejemplo, un mes, o un año) y extraer el valor máximo (mínimo) registrado en cada bloque, generando así una nueva serie formada por valores extremos. 
+
+Por otro lado, en el Método del Umbral, más moderno y poderoso, sólo trabaja con los valores de la serie que alcanzan o superan (están por debajo) de cierto nivel conocido como "umbral".
+
+

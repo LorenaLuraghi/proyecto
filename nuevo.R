@@ -19,25 +19,6 @@ temperaturas <- subset(temperaturas, select = c(1,2,3,10,11) )
 ui <- navbarPage(
   title="Temperaturas mínimas del Uruguay",
   
-  tabPanel("Base de datos" , type= "tabset",
-           fluidRow(
-             h4("Se  cuenta  con  una  base  de  datos compuesta  por  registros  diarios  de  temperaturas  mínimas  de  26  estaciones  meteorológicas  de  Uruguay  para  el  período  2002-2014.  Los  datos  están  comprendidos  entre  el  1º  de  enero  de  2002  y  el  
-                31  de  diciembre  de  2014,  lo  cual  implica  un  total  de  4.526  observaciones  por  estación."),
-             fluidRow(
-            column(4,
-                      selectInput("nroest",
-                                  "Número de estación:",
-                                  c("Todas",
-                                    unique(as.character(temperaturas$nroEstacion))))
-               )
-           ),
-           column(12,
-                  dataTableOutput('table')
-           )
-           
-           
-  )),
-  
   
   tabPanel("Introducción",type="tabset",
            fluidRow(
@@ -48,8 +29,27 @@ ui <- navbarPage(
                     img(class="img-polaroid",
                         src="Puerto-vallarta.jpg")))),
   
+  tabPanel("Base de datos" , type= "tabset",
+           fluidRow(
+             h4("Se  cuenta  con  una  base  de  datos compuesta  por  registros  diarios  de  temperaturas  mínimas  de  26  estaciones  meteorológicas  de  Uruguay  para  el  período  2002-2014.  Los  datos  están  comprendidos  entre  el  1º  de  enero  de  2002  y  el  
+                31  de  diciembre  de  2014,  lo  cual  implica  un  total  de  4.526  observaciones  por  estación."),
+             fluidRow(
+               column(4,
+                      selectInput("nroest",
+                                  "Número de estación:",
+                                  c("Todas",
+                                    unique(as.character(temperaturas$nroEstacion))))
+               )
+             ),
+             column(12,
+                    dataTableOutput('table')
+             )
+             
+             
+           )),
   
-  tabPanel("Distancias de estaciones al aeropuerto de Carrasco",type="tabset",
+  
+  tabPanel("Exploración de la base de datos",type="tabset",
            
            fluidRow(column(8,leafletOutput("mymap",height = 500)),
                     
@@ -93,6 +93,10 @@ ui <- navbarPage(
   
   tabPanel("Mapa temperaturas", type="tabset",
            
+           fluidRow( h4("Se muestra las temperaturas minímas registradas para cada depertamento según mes y año seleccionados")
+             
+           ),
+           
            
            
            
@@ -103,9 +107,16 @@ ui <- navbarPage(
                          value="2012-05-24")
              ),
              mainPanel = (ggvisOutput("mapauy"))
-           ) )
-)
-
+           ) ),
+  tabPanel("Metodología", type="tabset",
+           
+           fluidRow(
+             column(6,
+                    includeMarkdown("metodologia.Rmd")
+             )
+           ) 
+  
+) )
 
 
 server <- function(input,output,session){
