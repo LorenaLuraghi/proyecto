@@ -111,12 +111,36 @@ ui <- navbarPage(
   tabPanel("Metodología", type="tabset",
            
            fluidRow(
-             column(6,
+             column(12,
                     includeMarkdown("metodologia.Rmd")
-             )
-           ) 
+             ),
+             column(12, 
+                    h4("aca irian los boxplot y avisamos que usaremos solo algunos meses, 
+                       eso se puede justificar porque no queremos estacionalidad"))
+           )),
+  tabPanel ("Método Block Máxima", type="tabset",
+            
+            radioButtons("bloque", label = h3("Tamaño del bloque"), 
+                               choices = list("Un año" = 1, "Un mes" = 2),
+                               selected = 1),
+            
+            fluidRow( 
+              column(12,
+                   dataTableOutput('tablabloque')
+              )
+            
+            
+            ),
+            
+            
+            
+            
+
   
-) )
+  
+  tabPanel("Método del Umbral")
+  
+ ))
 
 
 server <- function(input,output,session){
@@ -232,6 +256,27 @@ server <- function(input,output,session){
       layer_paths(strokeOpacity:=0.5, stroke:="#7f7f7f",fill=~tmin)  %>%  
       hide_axis("x") %>% hide_axis("y") %>% bind_shiny("mapauy")
   })
+  
+  output$tablabloque <- renderDataTable({ 
+    temperaturas <- read.csv("temperaturas.csv",sep="\t")
+    temperaturas <- mutate(temperaturas, fecha=paste(dia,mes,anio, sep="-"))
+    temperaturas <- mutate(temperaturas,fecha=dmy(temperaturas$fecha))
+    temperaturas <- subset(temperaturas, select = c(1,2,3,5,6,10,11) )
+    temperaturas <- temperaturas %>% mutate(tmin=-1*tmin) %>% filter(mes %in% 5:9) %>% filter(nroEstacion==2) %>% 
+      filter(!is.na(tmin))
+    
+    if (input$bloque== 1) {
+      temperaturas <- temperaturas %>% group_by(anio) %>% summarise(max=max(tmin))
+    } 
+    else {temperaturas <- temperaturas %>% group_by(anio,mes) %>% summarise(max=max(tmin))}
+    
+    
+    
+    
+    
+  })
+  
+  
 }
 
 
