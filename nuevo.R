@@ -73,16 +73,19 @@ ui <- navbarPage(
                                 min =2004,
                                 max = 2015,
                                 value =c( 2002:2004)
-                    ),
-                    sliderInput(inputId ="m",
-                                label = "superior",
-                                
-                                min = -10,
-                                max=30,
-                                value=12,
-                                step= 0.2 )
+                    )
+                    
                     )),
            
+           
+           hr(),
+           
+           fluidRow( column(2),
+                     column(8,h2("Temperaturas minimas mensuales para las estaciones seleccionadas")
+                     ),
+                     column (2)),
+           
+           hr(),
            
            fluidRow(
              
@@ -108,6 +111,9 @@ ui <- navbarPage(
              ),
              mainPanel = (ggvisOutput("mapauy"))
            ) ),
+  
+  
+  
   tabPanel("Metodología", type="tabset",
            
            fluidRow(
@@ -152,7 +158,7 @@ server <- function(input,output,session){
     
     temperaturas %>% filter(Estacion %in% c(input$estac)) %>% filter(between(anio,min(input$year),max(input$year))) %>% group_by(anio,mes,Estacion) %>%
       slice(which.min(tmin)) %>%
-      ggplot(aes(x=fecha,y=tmin, color=Estacion)) + geom_line()+geom_hline(yintercept = input$m, colour="red",size=1)+
+      ggplot(aes(x=fecha,y=tmin, color=Estacion)) + geom_line()+labs(x="Fecha", y="Temperatura mínima mensual")+
       geom_vline(xintercept = 2005,colour="black", size=2)
     
   })
