@@ -59,20 +59,31 @@ Sin embargo para la realización del proyecto las variables a utilizar son:
 ##ANALISIS EXPLORATORIO DE DATOS
 
 
-Gráfico de la serie por estaciones, observamos que es estacional, para la aplicación de teoría de extremos los datos no deben ser estacionales, por lo cual se eligen bloques de datos en cada año (nos quedamos con determinados meses por año)
+Para la aplicación de métodos de teroría de extremos los datos no pueden ser estacionales ni dependientes(), por lo cual en primera instancia se corrobora con un gráfico de la serie.
+
+hay estacionalidad? si
+
+Hay outliers? Grafico de bxplot por trimestre (para meses de invierno)
+
+Tabla de temperaturas mínimas por departamento: para ver si las mínimas se registraron en el mismo año y si hay una correlación de temperaturas y ubicación geografica( sur-centro-norte). Se agrega una variable mas
+
+detallar que departamentos son parte de cada grupo.
+
+hay correlacion entre las temperaturas mínimas y la altitud?
+
+
+Plot de temperatura mínima registrada en cada año, (puede ser un plotly) coloreado por zona de estación. La idea es explorar si los mínimos siempre se dan en la misma zona o no. si hay una correlación .
 
 
 
+##Metodologia: Métodos para elegir los datos con los cuales se aplicará la teoría de extremos
 
-#Metodologia.....
-
-
-Método del umbral: 
-
-Método de Block Maximal: breve explicacíon (que es? y como se usa) y salida del plot
+#Metodo del Umbral:
 
 
-Mención de teorema teoria de extremos?
+#Método de block máxima:
+
+
 
 
 
