@@ -1,0 +1,71 @@
+---
+title: "Proyecto Final-Temperaturas"
+author: "Luraghi-Rodriguez"
+date: "June 18, 2018"
+output: pdf_document
+---
+
+
+
+## INTRODUCCION
+
+OBJETIVO:
+
+Relaizar un análisis exploratorio de datos para la modelización de temperaturas extremas aplicadas a  en el Uruguayumo para el deasarrollo  teoria de extremos aplicada a temperaturas mínimas registradas en el territorio uruguayo entre los años 2002 y 2015.
+IMPORTANCIA DEL MODELADO (EJEMPLOS-)
+
+
+## DATOS
+La base cuanta con 118664 observaciones y 8 variables. cada observacion corresponde al registro  de la temperatura mínima del día.
+
+Las variables son:
+
+*nroEstacion: Número de Estación
+*lon: longitud en la cual se encuentra ubicada la Estación
+*lat: Latitud en la cual se encuentra ubicada la Estación
+*altitud: altura de la estación respecto al nivel del mar 
+*anio: Año en el cual se registró la temperatura
+*mes: Mes en el cual se registró la temperatura
+*dia: Día en el cual se registró la temperatura
+*tmin: valor en grados celsius de la temperatura mínima del día.
+*modis1: Temperatura registrada por satélite
+*modis2: Temperatura registrada por satélite
+
+Para el objetivo de la pasantía el cual es modelar las temperaturas mínimas, vamos a utilizar las variables: número de estacion, fecha , temperatura mínima registrada y coordenadas geograficas para un análisis espacial. Agregaremos la variable departamento, la cual dependerá de la ubicación de las estaciones.
+
+
+
+
+##ANALISIS EXPLORATORIO DE DATOS
+
+
+Gráfico de la serie por estaciones, observamos que es estacional, para la aplicación de teoría de extremos los datos no deben ser estacionales, por lo cual se eligen bloques de datos en cada año (nos quedamos con determinados meses por año)
+
+
+
+
+#Metodologia.....
+
+
+Método del umbral: breve explicación ( que es?, y como se usa) y salida de plot
+
+Método de Block Maximal: breve explicacíon (que es? y como se usa) y salida del plot
+
+
+Mención de teorema teoria de extremos?
+
+
+
+##Descripción de la aplicación shiny
+
+A través de la aplicación Shiny, mostraremos el análisis exploratorio de los datos, aparecerán gráficos de la serie de temperaturas, pudiendo filtrar por numero de estación, y pudiendo ubicar geograficamente las mismas. Para todo el territorio uruguayo se podrá observar por mes las temperaturas mínimas registradas en cada departamento.
+
+
+
+
+
+
+
+
+
+##Comentarios finales
