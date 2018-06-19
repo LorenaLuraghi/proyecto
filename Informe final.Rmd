@@ -11,27 +11,47 @@ output: pdf_document
 
 OBJETIVO:
 
-Relaizar un análisis exploratorio de datos para la modelización de temperaturas extremas aplicadas a  en el Uruguayumo para el deasarrollo  teoria de extremos aplicada a temperaturas mínimas registradas en el territorio uruguayo entre los años 2002 y 2015.
-IMPORTANCIA DEL MODELADO (EJEMPLOS-)
+Relaizar un análisis exploratorio de los datos utilizados para un proyecto cuyo objetivo general es la modelización y predicción de las temperaturas mínimas extremas en Uruguay, utilizando el enfoque
+de la teoría de valores extremos.
+
+La modelización de los eventos extremos climáticos resulta de particular interés en la actualidad, debido
+al gran impacto que estos fenómenos producen tanto en la población como en los sectores productivos.
+Estos últimos, que resultan especialmente sensibles a la variabilidad climática, adolecen en general de
+un conocimiento confiable sobre la ocurrencia de sucesos extremos y les es imprescindible asignarles
+ciertas probabilidades de ocurrencia. 
+
+Uno de los objetivos específicos del proyecto sobre valores extremos consiste en comparar dos metodologías para la modelización, obteniendo predicciones de los niveles de retorno mediante el Método de Valores Extremos
+por Bloques y el Método del Umbral. Además, se busca contrastar los resultados obtenidos mediante el
+uso de los diversos paquetes del software estadístico R actualmente disponibles, por lo tanto realizaremos también la exploración de las bases de datos de valores extremos utilizadas para cada uno de los dos métodos mencionados.
+
 
 
 ## DATOS
-La base cuanta con 118664 observaciones y 8 variables. cada observacion corresponde al registro  de la temperatura mínima del día.
+La base de datos original está compuesta por registros diarios de temperaturas mínimas
+de 26 estaciones meteorológicas de Uruguay para el período 2002-2014. Los datos están comprendidos
+entre el 1o de enero de 2002 y el 31 de diciembre de 2014, lo cual implica un total de 4.526
+observaciones por estación (118664 observaciones en total). 
 
-Las variables son:
+La base incluye las siguientes variables:
 
-*nroEstacion: Número de Estación
-*lon: longitud en la cual se encuentra ubicada la Estación
-*lat: Latitud en la cual se encuentra ubicada la Estación
-*altitud: altura de la estación respecto al nivel del mar 
-*anio: Año en el cual se registró la temperatura
-*mes: Mes en el cual se registró la temperatura
-*dia: Día en el cual se registró la temperatura
-*tmin: valor en grados celsius de la temperatura mínima del día.
-*modis1: Temperatura registrada por satélite
-*modis2: Temperatura registrada por satélite
 
-Para el objetivo de la pasantía el cual es modelar las temperaturas mínimas, vamos a utilizar las variables: número de estacion, fecha , temperatura mínima registrada y coordenadas geograficas para un análisis espacial. Agregaremos la variable departamento, la cual dependerá de la ubicación de las estaciones.
+* nroEstacion: Número de Estación
+* lon: longitud en la cual se encuentra ubicada la Estación
+* lat: Latitud en la cual se encuentra ubicada la Estación
+* altitud: altura de la estación respecto al nivel del mar 
+* anio: Año en el cual se registró la temperatura
+* mes: Mes en el cual se registró la temperatura
+* dia: Día en el cual se registró la temperatura
+* tmin: valor en grados celsius de la temperatura mínima del día.
+* modis1: Temperatura registrada por satélite
+* modis2: Temperatura registrada por satélite 
+
+Sin embargo para la realización del proyecto las variables a utilizar son: 
+* número de estacion
+* fecha: para tener un orden cronológico, creamos esta nueva variable a partir de las variables año, mes y día
+* temperatura mínima registrada 
+* coordenadas geograficas para un análisis espacial.
+* departamento: asignada de acuerdo a la ubicación geográfica (latitud, longitud) de cada estación.
 
 
 
@@ -47,7 +67,7 @@ Gráfico de la serie por estaciones, observamos que es estacional, para la aplic
 #Metodologia.....
 
 
-Método del umbral: breve explicación ( que es?, y como se usa) y salida de plot
+Método del umbral: 
 
 Método de Block Maximal: breve explicacíon (que es? y como se usa) y salida del plot
 
