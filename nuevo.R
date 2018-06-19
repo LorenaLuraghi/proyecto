@@ -10,24 +10,18 @@ library(raster)
 library(rgeos)
 library(rgdal)
 library(dplyr)
+library(plotly)
+library(scales)
+library(shinythemes)
 
 temperaturas <- read.csv("temperaturas.csv",sep="\t")
 temperaturas <- mutate(temperaturas, fecha=paste(dia,mes,anio, sep="-"))
 temperaturas <- mutate(temperaturas,fecha=dmy(temperaturas$fecha))
 temperaturas <- subset(temperaturas, select = c(1,2,3,10,11) )
 
-ui <- navbarPage(
+ui <- navbarPage(theme = shinytheme("cerulean"),
   title="Temperaturas mínimas del Uruguay",
   
-  
-  tabPanel("Introducción",type="tabset",
-           fluidRow(
-             column(6,
-                    includeMarkdown("introduccion.Rmd")
-             ),
-             column(3,
-                    img(class="img-polaroid",
-                        src="Puerto-vallarta.jpg")))),
   
   tabPanel("Base de datos" , type= "tabset",
            fluidRow(
@@ -46,107 +40,68 @@ ui <- navbarPage(
              )
              
              
-           )),
+             )),
   
   
-  tabPanel("Exploración de la base de datos",type="tabset",
+  tabPanel("Visualización",type="tabset",
            
            fluidRow(column(8,leafletOutput("mymap",height = 500)),
                     
                     br(),
                     
                     column( 3,selectizeInput(inputId = "estac",
-                                             label = "Estación",
-                                             choices=list("Carrasco,Canelones"=1, "Melilla,Canelones"=2, "Artigas, Artigas"=3, "Coronado, Artigas"=4, "Laguna de los Patos,Colonia"=5,"Santa Bernardina,Durazno"=6,"Florida,Florida"=7,
-                                                          "Laguna del Sauce,Maldonado"=8,"Melo, Cerro Largo"=9, "Mercedes,Soriano"=10,"Paso de los Toros, Tacuarembó"=11,"Chacras de Paysandú, Paysandú"=12,"Prado,Montevideo"=13,"Punta del Este, Maldonado"=14,"Rivera,Rivera"=15,"Ciudad de Rocha,Rocha"=16,"Nueva Hesperides,Salto"=17,"San José, San José"=18,"Ciudad de Tacuarembó, Tacuarembó"=19,"Treinta y Tres,Treinta y Tres"=20,"Trinidad,Flores"=21,
-                                                          "Young,Río Negro"=22,"Lascano,Rocha"=23, "El Semillero,Colonia"=24,"Las Brujas,Canelones"=25,"El Naranjal,Salto"=26),
+                                             label = "Número de estación",
+                                             choices=list("E1"=1, "Las Brujas"=2, "E3"=3, "E4"=4, "E5"=5,"E6"=6,"e7"=7,
+                                                          "e8"=8,"e9"=9, "e10"=10,"e11"=11,"e12"=12,"e13"=13,"e14"=14,"e15"=15,"e16"=16,"e17"=17,"e18"=18,"e19"=19,"e20"=20,"e21"=21,
+                                                          "e22"=22,"e23"=23, "e24"=24,"e25"=25,"e26"=26),
                                              selected = 2 ,
                                              options = list(maxItems = 4L),
-                                             multiple = TRUE
-                    ),
-                    
-                    
-                    
-                    
-                    sliderInput(inputId = "year",
-                                label = "Año",
-                                min =2004,
-                                max = 2015,
-                                value =c( 2002:2004)
+                                             multiple = TRUE ),
+                            
+                            
+                            sliderInput(inputId = "year",
+                                        label = "Año",
+                                        min =2004,
+                                        max = 2015,
+                                        value =c( 2002:2004) ),
+                            
+                            dateInput(inputId = "fe",
+                                      label = "Seleccionar Fecha",
+                                      value= "2012-05-01")
                     )
-                    
-                    )),
-           
-           
-           hr(),
-           
-           fluidRow( column(2),
-                     column(8,h2("Temperaturas minimas mensuales para las estaciones seleccionadas")
-                     ),
-                     column (2)),
-           
-           hr(),
-           
-           fluidRow(
-             
-             column(12, plotOutput("serie"))
-           )),
-  
-  
-  
-  tabPanel("Mapa temperaturas", type="tabset",
-           
-           fluidRow( h4("Se muestra las temperaturas minímas registradas para cada depertamento según mes y año seleccionados")
-             
            ),
+           hr(),
            
+           fluidRow( column(1),
+                     column(4,h2("Temperaturas minimas mensuales para las estaciones seleccionadas")
+                     ),
+                     column (1), column(4, h2("Temperaturas mínimas mensuales por Departamento"))),
            
-           
-           
-           sidebarLayout(
-             sidebarPanel(
-               dateInput(inputId = "dia",
-                         label ="Seleccionar dia",
-                         value="2012-05-24")
-             ),
-             mainPanel = (ggvisOutput("mapauy"))
-           ) ),
-  
-  
-  
-  tabPanel("Metodología", type="tabset",
+           hr(),
            
            fluidRow(
-             column(12,
-                    includeMarkdown("metodologia.Rmd")
-             ),
-             column(12, 
-                    h4("aca irian los boxplot y avisamos que usaremos solo algunos meses, 
-                       eso se puede justificar porque no queremos estacionalidad"))
+             
+             column(6, plotOutput("serie")),
+             
+             column(6, plotlyOutput("Mapita"))
            )),
-  tabPanel ("Método Block Máxima", type="tabset",
+  
+  
+  
+  tabPanel ("Cambiar nombre", type="tabset",
             
             radioButtons("bloque", label = h3("Tamaño del bloque"), 
-                               choices = list("Un año" = 1, "Un mes" = 2),
-                               selected = 1),
+                         choices = list("Un año" = 1, "Un mes" = 2),
+                         selected = 1),
             
             fluidRow( 
               column(12,
-                   dataTableOutput('tablabloque')
+                     dataTableOutput('tablabloque')
               )
-            
-            
-            ),
-            
-            
-            
-            
+              
+              
+            )))
 
-  
-  
-  tabPanel("Método del Umbral")
-  
- ))
 
 
 server <- function(input,output,session){
@@ -164,17 +119,17 @@ server <- function(input,output,session){
   })
   
   output$table <- renderDataTable({ 
-  temperaturas <- read.csv("temperaturas.csv",sep="\t")
-  temperaturas <- mutate(temperaturas, fecha=paste(dia,mes,anio, sep="-"))
-  temperaturas <- mutate(temperaturas,fecha=dmy(temperaturas$fecha))
-  temperaturas <- subset(temperaturas, select = c(1,2,3,10,11) )
-  
-  if (input$nroest != "Todas") {
-    temperaturas <- temperaturas[temperaturas$nroEstacion == input$nroest,]
-  } 
-  temperaturas
-  
-  
+    temperaturas <- read.csv("temperaturas.csv",sep="\t")
+    temperaturas <- mutate(temperaturas, fecha=paste(dia,mes,anio, sep="-"))
+    temperaturas <- mutate(temperaturas,fecha=dmy(temperaturas$fecha))
+    temperaturas <- subset(temperaturas, select = c(1,2,3,10,11) )
+    
+    if (input$nroest != "Todas") {
+      temperaturas <- temperaturas[temperaturas$nroEstacion == input$nroest,]
+    } 
+    temperaturas
+    
+    
   })
   
   
@@ -193,74 +148,124 @@ server <- function(input,output,session){
   })
   
   
-  output$mapauy <- reactive({
+  output$Mapita <- renderPlotly({
     
-    
-    
-    
-    
-    
-    
-    temperaturas <- read.csv("temperaturas.csv",sep="\t")
-    temperaturas <- mutate(temperaturas, fecha=paste(dia,mes,anio, sep="-"))
-    temperaturas <- mutate(temperaturas,fecha=dmy(temperaturas$fecha))
-    
-    
-    #conseguimos datos de uruguay 
+    temperaturas <- read.csv("temperaturas.csv", sep = "\t")
+    temperaturas <- mutate(temperaturas, fecha = paste(dia, mes, 
+                                                       anio, sep = "-"))
+    temperaturas <- mutate(temperaturas, fecha = dmy(temperaturas$fecha))
+    # conseguimos datos de Uruguay
     uruguay <- getData("GADM", country = "UY", level = 0)
-    
-    
-    #datos de uruguay con los departamentos
+    library(shiny)
+    # datos de Uruguay con los departamentos
     uruguay_states <- getData("GADM", country = "UY", level = 1)
-    
-    #transformamos los datos con la función spTransform
-    uystates_UTM <-spTransform(uruguay_states, CRS("+init=EPSG:5383")) 
-    
-    
-    #extrae del objeto uystates_UTM los departamentos (si ponemos view en el elemento nos muestra)
+    # transformamos los datos con la función spTransform
+    uystates_UTM <- spTransform(uruguay_states, CRS("+init=EPSG:5383"))
+    # extrae del objeto uystates_UTM los departamentos (si
+    # ponemos view en el elemento nos muestra)
     NAME_1 <- uystates_UTM@data$NAME_1
+    temperaturas <- mutate(temperaturas, departamento = ifelse(nroEstacion %in% 
+                                                                 c(1, 2, 25), "Canelones", ifelse(nroEstacion %in% c(13), 
+                                                                                                  "Montevideo", ifelse(nroEstacion %in% c(16, 26), "Rocha", 
+                                                                                                                       ifelse(nroEstacion %in% c(3, 4), "Artigas", ifelse(nroEstacion %in% 
+                                                                                                                                                                            c(15), "Rivera", ifelse(nroEstacion %in% c(9), "Cerro Largo", 
+                                                                                                                                                                                                    ifelse(nroEstacion %in% c(5, 24), "Colonia", ifelse(nroEstacion %in% 
+                                                                                                                                                                                                                                                          c(6), "Durazno", ifelse(nroEstacion %in% c(7), 
+                                                                                                                                                                                                                                                                                  "Florida", ifelse(nroEstacion %in% c(8, 14), 
+                                                                                                                                                                                                                                                                                                    "Maldonado", ifelse(nroEstacion %in% c(10), 
+                                                                                                                                                                                                                                                                                                                        "Soriano", ifelse(nroEstacion %in% c(11, 
+                                                                                                                                                                                                                                                                                                                                                             19), "Tacuarembó", ifelse(nroEstacion %in% 
+                                                                                                                                                                                                                                                                                                                                                                                         c(12), "Paysandú", ifelse(nroEstacion %in% 
+                                                                                                                                                                                                                                                                                                                                                                                                                     c(17, 26), "Salto", ifelse(nroEstacion %in% 
+                                                                                                                                                                                                                                                                                                                                                                                                                                                  c(18), "San José", ifelse(nroEstacion %in% 
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                              c(20), "Treinta y Tres", ifelse(nroEstacion %in% 
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                c(21), "Flores", "Río Negro"))))))))))))))))))
+    vectorestaciones <- c(3, 1, 9, 5, 6, 21, 7, 0, 8, 13, 12, 22, 
+                          15, 16, 17, 18, 10, 11, 20)
+    temperaturas <- temperaturas %>% filter(nroEstacion %in% vectorestaciones)
+    temperaturas <- mutate(temperaturas, Estacion = as.factor(temperaturas$nroEstacion))
+    temperaturas <- temperaturas %>% group_by(anio, mes, Estacion) %>% 
+      slice(which.min(tmin))
+    temperaturas <- mutate(temperaturas,fecha2=as.Date((paste(as.character(anio),as.character( mes),"01", sep='-'))))
     
-    #la idea ahora es crear un data.frame que asigne a cada departamento un valor de interes.
-    #para esto tendriamos que elegir que estación va a representar cada departamento, o crear una variable
-    #en la base de datos que sea departamento, para asignarle valores de interés...
+    count_df <- data.frame(filter(temperaturas, fecha2 == input$fe)$departamento, 
+                           filter(temperaturas, fecha2 == input$fe)$tmin)
     
-    temperaturas <- mutate(temperaturas,departamento=ifelse(nroEstacion %in% c(1,2,25),"Canelones",ifelse(nroEstacion %in% c(13),"Montevideo",ifelse(nroEstacion %in% c(16,26),"Rocha",ifelse(nroEstacion %in% c(3,4),"Artigas",ifelse(nroEstacion %in% c(15),"Rivera",ifelse(nroEstacion %in% c(9),"Cerro Largo",ifelse(nroEstacion %in% c(5,24),"Colonia",ifelse(nroEstacion %in% c(6),"Durazno",ifelse(nroEstacion %in% c(7),"Florida",ifelse(nroEstacion %in% c(8,14),"Maldonado",ifelse(nroEstacion %in% c(10),"Soriano",ifelse(nroEstacion %in% c(11,19),"Tacuarembó",ifelse(nroEstacion %in% c(12),"Paysandú",ifelse(nroEstacion %in% c(17,26),"Salto",ifelse(nroEstacion %in% c(18),"San José",ifelse(nroEstacion %in% c(20),"Treinta y Tres",ifelse(nroEstacion %in% c(21),"Flores","Río Negro"))))))))))))))))))
-    
-    #para empezar eligiremos una estación representativa para cada depto, despues podemos ver de fusionar
-    #varias, pero no sabemos como se hace je 
-    
-    vectorestaciones <- c(3,1,9,5,6,21,7,0,8,13,12,22,15,16,17,18,10,11,20)
-    
-    temperaturas <-temperaturas %>% filter(nroEstacion %in% vectorestaciones)
-    
-    #aca es donde deberiamos poner un input$fecha cuando lo pasemos al shiny.
-    
-    
-    count_df <-data.frame(filter(temperaturas,fecha==input$dia)$departamento,filter(temperaturas,fecha==input$dia)$tmin)
     names(count_df) <- c("NAME_1", "tmin")
-    
-    #no hay estacion en lavalleja, la agregamos como un NA
+    # no hay estacion en Lavalleja, la agregamos como un NA
     lav <- data.frame(c("Lavalleja"), NA)
     names(lav) <- c("NAME_1", "tmin")
-    
-    #unimos los dos data frame y los ordeno alfabeticamente
-    
-    count_df <- rbind(count_df,lav)
-    count_df <- count_df[order(count_df$NAME_1),]
-    
-    
+    count_df <- rbind(count_df, lav)
     uystates_UTM@data$id <- rownames(uystates_UTM@data)
-    uystates_UTM@data <- plyr::join(uystates_UTM@data, count_df, by="NAME_1")
+    uystates_UTM@data <- plyr::join(uystates_UTM@data, count_df, 
+                                    by = "NAME_1")
     uystates_df <- fortify(uystates_UTM)
-    uystates_df <- plyr::join(uystates_df,uystates_UTM@data, by="id")
     
-    #Mapa basico usando ggvis
+    uystates_df <- plyr::join(uystates_df, uystates_UTM@data, by = "id")
     
-    uystates_df %>%
-      ggvis(~long, ~lat) %>%
-      group_by(group, id,tmin) %>%
-      layer_paths(strokeOpacity:=0.5, stroke:="#7f7f7f",fill=~tmin)  %>%  
-      hide_axis("x") %>% hide_axis("y") %>% bind_shiny("mapauy")
+    uystates_df <- uystates_df %>% filter(!(NAME_1 == "Rivera" & 
+                                              lat < 6400000))  #un error en el mapa que hay que sacar
+    
+    theme_opts <- list(theme(panel.grid.minor = element_blank(), 
+                             panel.grid.major = element_blank(), panel.background = element_blank(), 
+                             plot.background = element_blank(), axis.line = element_blank(), 
+                             axis.text.x = element_blank(), axis.text.y = element_blank(), 
+                             axis.ticks = element_blank(), axis.title.x = element_blank(), 
+                             axis.title.y = element_blank(), plot.title = element_blank()))
+    countunique <- uystates_df %>% group_by(NAME_1) %>% summarise(mlong = mean(long), 
+                                                                  mlat = mean(lat))
+    
+    
+    
+    ### countunique[8,] <- c('Rivera', 129381.96, 6441658)
+    b <- left_join(countunique, count_df)
+    
+    tmin <- b$tmin
+    library(scales)
+    #  MAPITA <- ggplot() + geom_polygon(data = uystates_df, aes(x = long, 
+    #   y = lat, group = group, fill = tmin), color = "black", size = 0.25) + 
+    # geom_text(data = countunique, aes(label = round(tmin, 2), 
+    # x = mlong, y = mlat)) + theme(aspect.ratio = 1) + labs(fill = "Temperatura mínima") + 
+    # scale_fill_gradient2(midpoint = mean(b$tmin, na.rm = TRUE), 
+    # low = muted("blue"), high = muted("red"), mid = "white", 
+    #  na.value = "green") + theme_opts
+    
+    
+    # MAPITA
+    
+    ################################################### 
+    
+    countunique <- left_join(countunique, count_df)
+    
+    countunique$hover <- with(countunique, paste("Departamento", 
+                                                 NAME_1, "<br>", "Temperatura mínima", tmin))
+    
+    uystates_df <-uystates_df %>% mutate(Departamento = NAME_1)
+    
+    library(plotly)
+    MAPITA2 <- ggplot(data = uystates_df, aes(dpto = Departamento)) + geom_polygon(data = uystates_df, aes(x = long, 
+                                                                                                           y = lat, group = group, fill = tmin), color = "black",
+                                                                                   size = 0.25, show.legend = TRUE) + 
+      theme(aspect.ratio = 1) + labs(fill = "Temperatura mínima") + 
+      #geom_text(aes(label=NAME_1, inherit.aes=TRUE)) +
+      # 
+      # geom_text(data = countunique, 
+      #           aes(label = NAME_1, x = mlong, y = mlat)) + 
+      scale_fill_gradient2(midpoint = mean(b$tmin, na.rm = TRUE),
+                           low = muted("blue"), high = muted("red"),
+                           mid = "white", na.value = "grey") + 
+      theme_opts
+    
+    countunique$hover
+    ## quiero que en las etiquetas salga la info que esta en
+    ## hover, departamento y temp mínima
+    
+    g <- ggplotly(MAPITA2)
+    ## ggplotly(MAPITA2) %>% add_trace(countunique, text=
+    ## ~countunique$hover)
+    
+    ggplotly(g)
+    
   })
   
   output$tablabloque <- renderDataTable({ 
