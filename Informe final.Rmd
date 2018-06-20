@@ -72,7 +72,12 @@ detallar que departamentos son parte de cada grupo.
 hay correlacion entre las temperaturas mínimas y la altitud?
 
 
-Plot de temperatura mínima registrada en cada año, (puede ser un plotly) coloreado por zona de estación. La idea es explorar si los mínimos siempre se dan en la misma zona o no. si hay una correlación .
+Plot de temperatura mínima registrada en cada año, (puede ser un plotly) coloreado por zona de estación. La idea es explorar si los mínimos siempre se dan en la misma zona o no. si hay una correlación.
+
+
+Exploración espacial:
+
+Se presentan dos mapas, uno en el cual se ubican las estaciones seleccionadas y otro que muestra las temperaturas mínimas por mes en cada departamento coloreado por las temperaturas.
 
 
 
@@ -100,3 +105,12 @@ A través de la aplicación Shiny, mostraremos el análisis exploratorio de los 
 
 
 ##Comentarios finales
+
+
+
+
+## Referencias
+
+-coles
+-R
+-librerias
