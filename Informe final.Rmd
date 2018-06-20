@@ -5,7 +5,7 @@ date: "June 18, 2018"
 output: pdf_document
 ---
 
-
+###BORRADOR
 
 ## INTRODUCCION
 
@@ -61,7 +61,113 @@ Sin embargo para la realización del proyecto las variables a utilizar son:
 
 Para la aplicación de métodos de teroría de extremos los datos no pueden ser estacionales ni dependientes(), por lo cual en primera instancia se corrobora con un gráfico de la serie.
 
-hay estacionalidad? si
+
+
+```{r, warning=FALSE, echo=FALSE,message=FALSE}
+library(ggplot2)
+library(ggvis)
+library(tidyverse)
+library(lubridate)
+library(raster)
+library(rgeos)
+library(rgdal)
+library(tseries)
+library(xtable)
+library(forecast)
+```
+
+
+```{r, warning=FALSE, echo=FALSE}
+temperaturas <- read.csv("temperaturas.csv", sep = "\t")
+temperaturas <- mutate(temperaturas, fecha = paste(dia, mes, 
+  anio, sep = "-"))
+temperaturas <- mutate(temperaturas, fecha = dmy(temperaturas$fecha))
+
+temperaturas <- mutate(temperaturas, Estacion = as.factor(temperaturas$nroEstacion))
+
+serie <- temperaturas  %>% ggplot(aes(fecha,tmin))+geom_point()
+serie
+
+```
+
+
+
+Graficamos los registros de temperatura de las 26 estaciones para observar el comportamiento de los datos, como es esperado se observa una gran presencia de estacionalidad. Claramente en cada invierno se observa una caida en las temperaturas y en verano están los picos. Se observa una media constante.
+
+
+
+observemos una estación en particular:
+
+
+```{r, echo=FALSE}
+temperaturas <- read.csv("temperaturas.csv", sep = "\t")
+temperaturas <- mutate(temperaturas, fecha=paste("01",mes,anio, sep="-"))
+temperaturas <- mutate(temperaturas,fecha=dmy(fecha))
+
+temperaturas <- mutate(temperaturas, Estacion = as.factor(temperaturas$nroEstacion))
+
+
+temperaturas <-filter(temperaturas,Estacion==2) %>% group_by(anio,mes) %>%  slice(which.min(tmin)) %>% filter(anio>2003)
+
+temperaturas_ts <- ts(temperaturas$tmin, start=c(2004, 1), end=c(2014, 12), frequency=12)
+
+
+ggseasonplot(temperaturas_ts, season.labels = c("Ene","Feb", "Mar","Abr","May","Jun","Jul","Ago","Set","Oct","Nov","Dic")) + labs(title="Temperaturas mínimas por año") + xlab("Mes") + ylab("temperatura mínima")
+
+
+```
+
+agregar como comentario de figura:
+
+Podemos observar que para todos los años se da el mismo comportamiento, lo que confirma la existencia de estacionalidad, no se observa una tendencia, es decir que al pasar de los años haya un corrimiento de las funciones.
+
+Más adelante veremos métodos que nos ayudan a elegir datos de manera que no exista esta estacionalidad.
+
+
+Como el objetivo es modelar temperaturas extremas, y dentro de éstas los mínimos, nos enfocaremos en los meses de invierno.
+
+veremos si tenemos outliers entre los meses de mayo y setiembre
+
+
+
+```{r,warning=FALSE,echo=FALSE}
+
+temperaturas <- read.csv("temperaturas.csv", sep = "\t")
+temperaturas <- mutate(temperaturas, fecha=paste(dia,mes,anio, sep="-"))
+temperaturas <- mutate(temperaturas,fecha=dmy(fecha))
+
+temperaturas <- mutate(temperaturas, Estacion = as.factor(temperaturas$nroEstacion)) %>% filter(mes %in% c(5,6,7,8,9) )
+
+ggplot(temperaturas,aes(x=fct_reorder(Estacion,tmin),tmin))+geom_boxplot()+labs(x="Numero de estación", y="temperatura mínima")
+
+# ordenar los boxplots no me ayuda a nada.
+
+
+```
+En el boxplot observamos que tenemos outliers en varias estaciones, pero como lo que nos interesa es estudiar las temperaturas mínimas sólo miraremos a las estaciones 7,13,
+14, la cual presenta outliers en los mínimos.
+
+
+
+Vemos para las estaciones 7, 13, 14 los valores de los autliers y en que fecha se dan:
+
+
+
+```{r,warning=FALSE, echo=FALSE}
+
+temperaturas <- read.csv("temperaturas.csv", sep = "\t")
+temperaturas <- mutate(temperaturas, fecha=paste(dia,mes,anio, sep="-"))
+temperaturas <- mutate(temperaturas,fecha=dmy(fecha))
+
+temperaturas <- mutate(temperaturas, Estacion = as.factor(temperaturas$nroEstacion)) %>% filter(mes %in% c(6,7,8) )
+
+
+```
+
+
+
+
+
 
 Hay outliers? Grafico de bxplot por trimestre (para meses de invierno)
 
