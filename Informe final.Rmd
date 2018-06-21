@@ -74,6 +74,7 @@ library(rgdal)
 library(tseries)
 library(xtable)
 library(forecast)
+library(dplyr)
 ```
 
 
@@ -153,23 +154,109 @@ Vemos para las estaciones 7, 13, 14 los valores de los autliers y en que fecha s
 
 
 
-```{r,warning=FALSE, echo=FALSE}
+```{r,warning=FALSE, echo=FALSE,results='asis'}
 
 temperaturas <- read.csv("temperaturas.csv", sep = "\t")
 temperaturas <- mutate(temperaturas, fecha=paste(dia,mes,anio, sep="-"))
 temperaturas <- mutate(temperaturas,fecha=dmy(fecha))
 
-temperaturas <- mutate(temperaturas, Estacion = as.factor(temperaturas$nroEstacion)) %>% filter(mes %in% c(6,7,8) )
+estac <-filter(temperaturas,nroEstacion %in% c(7,13,14)) %>% filter(mes %in% c(5,6,7,8,9)) %>% filter(!is.na(tmin)) 
+df2 <- subset(estac, select = c(nroEstacion,tmin,fecha))
+df2 <- mutate(df2,fecha=as.character(fecha))
+options(xtable.comment = FALSE)
+
+group_by(df2,nroEstacion) %>% top_n(-3,tmin) %>% xtable() 
+
+
+```
+
+
+Dado estos datos, buscamos para cada dìa una estaciòn cercana y comparamos los valores de temperatura para esos dias.
+
+
+Utilizando las coordenadas geogràficas asignaremos un departamento a cada estaciòn.
+
+
+```{r,echo=FALSE}
+temperaturas <- read.csv("temperaturas.csv", sep = "\t")
+temperaturas <- mutate(temperaturas, fecha=paste(dia,mes,anio, sep="-"))
+temperaturas <- mutate(temperaturas,fecha=dmy(fecha))
+
+temperaturas <- mutate(temperaturas, departamento = ifelse(nroEstacion %in% 
+  c(1, 2, 25), "Canelones", ifelse(nroEstacion %in% c(13), 
+  "Montevideo", ifelse(nroEstacion %in% c(16, 26), "Rocha", 
+    ifelse(nroEstacion %in% c(3, 4), "Artigas", ifelse(nroEstacion %in% 
+      c(15), "Rivera", ifelse(nroEstacion %in% c(9), "Cerro Largo", 
+      ifelse(nroEstacion %in% c(5, 24), "Colonia", ifelse(nroEstacion %in% 
+        c(6), "Durazno", ifelse(nroEstacion %in% c(7), 
+        "Florida", ifelse(nroEstacion %in% c(8, 14), 
+          "Maldonado", ifelse(nroEstacion %in% c(10), 
+          "Soriano", ifelse(nroEstacion %in% c(11, 
+            19), "Tacuarembó", ifelse(nroEstacion %in% 
+            c(12), "Paysandú", ifelse(nroEstacion %in% 
+            c(17, 26), "Salto", ifelse(nroEstacion %in% 
+            c(18), "San José", ifelse(nroEstacion %in% 
+            c(20), "Treinta y Tres", ifelse(nroEstacion %in% 
+            c(21), "Flores", "Río Negro"))))))))))))))))))
+
+```
+
+
+La estaciòn 13, que se encuentra en Montevideo la compararemos con la 18 en San Jose, la 14 con la 8 ya que las dos estàn en Maldonado y la 7 que està en Florida, la compararemos con la 21 que està en Flores.
+
+
+Comparamos la estacion 13-Montevideo con la 2-Canelones
+```{r,echo=FALSE,results='asis'}
+
+ f <- filter(temperaturas,nroEstacion==2) %>% filter(fecha =="2007-08-21"| fecha =="2007-07-29"|fecha =="2009-07-31")
+options(xtable.comment = FALSE)
+f <- mutate(f,fecha=as.character(fecha))
+subset(f, select = c(nroEstacion,tmin,fecha,departamento)) %>% xtable()
+
+
+```
+
+
+Comparamos la estacion 14-Maldonado con la 8-Maldonado
+
+```{r,echo=FALSE,results='asis'}
+
+ f <- filter(temperaturas,nroEstacion==8) %>% filter(fecha =="2011-07-08"| fecha =="2013-07-22"|fecha =="2013-08-23")
+options(xtable.comment = FALSE)
+f <- mutate(f,fecha=as.character(fecha))
+subset(f, select = c(nroEstacion,tmin,fecha,departamento)) %>% xtable()
+
+
+```
+
+comparamos estacion 7-Florida con estacion 6-durazno
+
+
+```{r,echo=FALSE,results='asis'}
+
+ f <- filter(temperaturas,nroEstacion==6
+             ) %>% filter(fecha =="2012-07-30"| fecha =="2012-06-09"|fecha =="2012-07-28")
+options(xtable.comment = FALSE)
+f <- mutate(f,fecha=as.character(fecha))
+subset(f, select = c(nroEstacion,tmin,fecha,departamento)) %>% xtable()
 
 
 ```
 
 
 
+2012-06-09 \\ 
+  2 &   7 & -10.00 & 2012-07-28 \\ 
+  3 &   7 & -6.00 & 2012-07-30 
 
 
 
-Hay outliers? Grafico de bxplot por trimestre (para meses de invierno)
+
+
+
+
+
+
 
 Tabla de temperaturas mínimas por departamento: para ver si las mínimas se registraron en el mismo año y si hay una correlación de temperaturas y ubicación geografica( sur-centro-norte). Se agrega una variable mas
 
