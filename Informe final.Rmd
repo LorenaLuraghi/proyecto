@@ -274,12 +274,51 @@ Se presentan dos mapas, uno en el cual se ubican las estaciones seleccionadas y 
 
 
 
-##Metodologia: Métodos para elegir los datos con los cuales se aplicará la teoría de extremos
+#Metodologia.
 
-#Metodo del Umbral:
+El interés de la Teoría de valores extremos está centrado en modelar el comportamiento de $M_n = max \{X_1,X_2, \ldots, X_n \} $ siendo $X_1,X_2, \ldots , X_n$ una secuencia de variables aleatorias independientes con distribución F, y M_n representa el maximo del proceso sobre n unidades de tiempos de observación. 
+
+En Teoría la distribución de $M_n$ podría calcularse de manera exacta a partir de la función de distribución F: 
+
+$P(M_n \leq z) = P(X_1 \leq z, \ldots , X_n \leq z = P(X_1 \leq z) \times \ldots \times P(X_n \leq z) = [F(z)]^n$
+            
+Sin embargo, al sustituir F (desconocida) por su estimación y elevar a la n, pueden generarse grandes discrepancias.
+
+Un camino alternativo a este problema, es considerar F desconocida y aproximar directamente la distribución de $F^n$ utilizando un subconjunto de la base, los valores extremos. 
+
+Esta solución, análoga al Teorema Central del Límite, consiste en la busqueda de secuencias constantes $\{b_n; n \geq 1 \}$ y $\{a_n; n \geq 1 \}$ tales que la distribución de $M_n^* = \frac{M_n - b_n}{a_n}$ converge a una distribución no degenerada cuando $n \to + \inf$ .
+
+## Teorema de Valores extremos: 
+
+Si existen sucesiones constantes $a_n > 0$ y $b_n$ tales que: 
+
+$P(M^*_n = \cfrac{M_n - b_n}{a_n} \leq z) = F^n(a_nz + b_n)\to G(z)$ 
+
+entonces G pertenece a una de las siguientes familias: 
+
+#################################################
+
+El Teorema (1.1) afirma que $M^*_n$ converge en distribución a una de las tres familias de distribuciones mencionadas en el teorema las que, en conjunto, se denominan distribuciones de valores extremos (DVE). En particular, $(a)$ es la distribución de Gumbel, $(b)$ es la distribución de Fréchet y $(c)$ es la distribución de Weibull. Cada familia tiene un parámetro de ubicación y escala, $\mu$ y $\sigma$ respectivamente, y un parámetro de forma $\alpha$ en el caso de las familias Fréchet y Weibull. 
+
+Si bien el Teorema (1.1) no garantiza la existencia de un límite no degenerado para $M_n$, ni nos dice cuál es el límite cuando existe, la distribución límite de la variable normalizada $M^*_n$ tiene que ser alguna de las distribuciones incluidas en el teorema, cualquiera sea la distribución poblacional $F$.
+\\
+
+Los tres tipos de distribución del teorema pueden ser combinados en una sola distribución con una parametrización común, propuesta por Von Mises (1954) y Jenkinson (1955), que se conoce como la \textbf{Distribución de Valores Extremos Generalizada} (GEV, por sus siglas en inglés). La forma de esta distribución es: 
 
 
-#Método de block máxima:
+$G_{\xi,\mu,\sigma}(x) = exp\ \Big\{-\Big(1+\xi \Big(\cfrac{x-\mu}{\sigma}\Big)\Big)_+^{-1/ \xi}\Big\}$
+
+
+
+
+
+En los siguientes métodos asumiremos que la función F (distribución de los daots) es desconocida, y estimaremos directamente la distribución extrema, para esto intentamos captar en una nueva base aquellos valores extremos sobre los cuales nos interesa trabajar.
+
+
+Método del umbral: Consiste en seleccionar un valor u llamado umbral, y considerar aquellas observaciones que superen este valor. La elección de un umbral muy bajo aumentará el sesgo del modelo, mientras que la eleccion de un umbral demasiado alto aumentará la varianza.
+
+Método "Block Maxima": Útil cuando los datos pueden ser divididos en m bloques de tamaño m, el método consiste en seleccionar la temperatura extrema por bloque, asumiendo que las observaciones de los máximos por bloque son independientes.
+La elección del tamaño del bloque genera un trade-off entre sesgo y varianza, tomar bloques pequeños generan un mayor sesgo mientras que bloques de mayor tamaño aumentan la varianza en la estimacion de los parametros de la distribución.
 
 
 
