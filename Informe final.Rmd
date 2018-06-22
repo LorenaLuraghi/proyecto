@@ -5,6 +5,13 @@ date: "June 18, 2018"
 output: pdf_document
 ---
 
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, tidy.opts = list(width.cutoff = 50), tidy = TRUE, fig.pos = 'h', out.extra = '')
+
+```
+
 ###BORRADOR
 
 ## INTRODUCCION
@@ -36,9 +43,9 @@ La base incluye las siguientes variables:
 
 
 * nroEstacion: Número de Estación
-* lon: longitud en la cual se encuentra ubicada la Estación
+* lon: Longitud en la cual se encuentra ubicada la Estación
 * lat: Latitud en la cual se encuentra ubicada la Estación
-* altitud: altura de la estación respecto al nivel del mar 
+* altitud: Altura de la estación respecto al nivel del mar 
 * anio: Año en el cual se registró la temperatura
 * mes: Mes en el cual se registró la temperatura
 * dia: Día en el cual se registró la temperatura
@@ -47,20 +54,21 @@ La base incluye las siguientes variables:
 * modis2: Temperatura registrada por satélite 
 
 Sin embargo para la realización del proyecto las variables a utilizar son: 
-* número de estacion
-* fecha: para tener un orden cronológico, creamos esta nueva variable a partir de las variables año, mes y día
-* temperatura mínima registrada 
-* coordenadas geograficas para un análisis espacial.
-* departamento: asignada de acuerdo a la ubicación geográfica (latitud, longitud) de cada estación.
 
+* Número de estación
+* Fecha: para tener un orden cronológico, creamos esta nueva variable a partir de las variables año, mes y día
+* Temperatura mínima registrada 
+* Coordenadas geograficas para un análisis espacial.
+* Departamento: asignada de acuerdo a la ubicación geográfica (latitud, longitud) de cada estación.
+* Creamos una variable con el nombre de cada estación.
 
 
 
 ##ANALISIS EXPLORATORIO DE DATOS
 
+En este apartado se presentan los resultados del análisis exploratorio realizado para comprender los datos a efectos de poder aplicar teoría de extremos.
 
-Para la aplicación de métodos de teroría de extremos los datos no pueden ser estacionales ni dependientes(), por lo cual en primera instancia se corrobora con un gráfico de la serie.
-
+El primer punto a tener en cuenta es la existencia de estacionalidad. Sabemos que la temperatura tiene un comportamiento estacional, es decir todos los años la temperatura se comporta de la misma manera (temperaturas altas en verano, bajas en invierno). Lo corroboramos con el siguiente gráfico:
 
 
 ```{r, warning=FALSE, echo=FALSE,message=FALSE}
@@ -78,7 +86,15 @@ library(dplyr)
 ```
 
 
-```{r, warning=FALSE, echo=FALSE}
+
+
+```{r,echo=FALSE}
+cap1 <- "
+Graficamos los registros de temperatura de las 26 estaciones.Como es esperado, se observa una gran presencia de estacionalidad. Claramente en cada invierno las temperaturas mínimas son las más bajas, en verano las más altas y en primavera y otoño nos ubicamos en la franja media."
+```
+
+
+```{r , warning=FALSE, echo=FALSE,fig.cap=cap1,warning=FALSE, message=FALSE}
 temperaturas <- read.csv("temperaturas.csv", sep = "\t")
 temperaturas <- mutate(temperaturas, fecha = paste(dia, mes, 
   anio, sep = "-"))
@@ -86,21 +102,47 @@ temperaturas <- mutate(temperaturas, fecha = dmy(temperaturas$fecha))
 
 temperaturas <- mutate(temperaturas, Estacion = as.factor(temperaturas$nroEstacion))
 
-serie <- temperaturas  %>% ggplot(aes(fecha,tmin))+geom_point()
+serie <- temperaturas  %>% ggplot(aes(fecha,tmin))+geom_point(alpha=0.05)+labs(x="Fecha", y="Temperatura mínima diaria")
 serie
 
 ```
 
 
 
-Graficamos los registros de temperatura de las 26 estaciones para observar el comportamiento de los datos, como es esperado se observa una gran presencia de estacionalidad. Claramente en cada invierno se observa una caida en las temperaturas y en verano están los picos. Se observa una media constante.
+\newpage
+
+
+De acuerdo a la Figura \@ref(Figure 1), parecería que la media es constante. Calculemos la media de las temperaturas mínimas para cada año:
 
 
 
-observemos una estación en particular:
+
+```{r,results='asis',echo=FALSE}
+
+temperaturas <- read.csv("temperaturas.csv", sep = "\t")
+temperaturas <- mutate(temperaturas, fecha = paste(dia, mes, 
+  anio, sep = "-"))
+
+options(xtable.comment = FALSE)
+
+mutate(temperaturas, fecha = dmy(temperaturas$fecha)) %>% group_by(Año=anio) %>% summarise(Media=mean(tmin,na.rm = TRUE)) %>% xtable()
+
+
+```
+Como se puede observar en la tabla, la temperatura mínima media año a año no sufre mucha variación, por lo que podríamos afirmar que es constante
+
+
+Analizaremos como es el comportamiento de la temperatura dentro del año para una estación en particular. Elegimos la estación número 2, la cual corresponde a la estación de Melilla, Canelones.
 
 
 ```{r, echo=FALSE}
+cap3 <- "Comportamiento de las temparaturas mínimas para la estación Melilla, Canelones en el período 2004-2014"
+```
+
+
+
+
+```{r, echo=FALSE, fig.cap=cap3}
 temperaturas <- read.csv("temperaturas.csv", sep = "\t")
 temperaturas <- mutate(temperaturas, fecha=paste("01",mes,anio, sep="-"))
 temperaturas <- mutate(temperaturas,fecha=dmy(fecha))
@@ -113,44 +155,69 @@ temperaturas <-filter(temperaturas,Estacion==2) %>% group_by(anio,mes) %>%  slic
 temperaturas_ts <- ts(temperaturas$tmin, start=c(2004, 1), end=c(2014, 12), frequency=12)
 
 
-ggseasonplot(temperaturas_ts, season.labels = c("Ene","Feb", "Mar","Abr","May","Jun","Jul","Ago","Set","Oct","Nov","Dic")) + labs(title="Temperaturas mínimas por año") + xlab("Mes") + ylab("temperatura mínima")
+ggseasonplot(temperaturas_ts, season.labels = c("Ene","Feb", "Mar","Abr","May","Jun","Jul","Ago","Set","Oct","Nov","Dic")) + xlab("Mes") + ylab("temperatura mínima")+labs(title="")
 
 
 ```
 
-agregar como comentario de figura:
-
-Podemos observar que para todos los años se da el mismo comportamiento, lo que confirma la existencia de estacionalidad, no se observa una tendencia, es decir que al pasar de los años haya un corrimiento de las funciones.
-
-Más adelante veremos métodos que nos ayudan a elegir datos de manera que no exista esta estacionalidad.
+De acuerdo al gráfico 3 no se observan indicios de existencia de una tendencia, es decir que al pasar de los años haya un corrimiento de las funciones (calentamiento o enfriamiento global)
 
 
-Como el objetivo es modelar temperaturas extremas, y dentro de éstas los mínimos, nos enfocaremos en los meses de invierno.
+\newpage
 
-veremos si tenemos outliers entre los meses de mayo y setiembre
+#Análisis de Outliers
+
+Nuestro interés son las temperaturas extremas, por lo cual veremos si tenemos valores atípicos entre los meses de mayo y setiembre.
 
 
 
-```{r,warning=FALSE,echo=FALSE}
+```{r, echo=FALSE}
+cap4 <- "Boxplot de temperaturas mínimas para cada estación"
+```
+
+
+
+```{r,warning=FALSE,echo=FALSE, fig.cap=cap4}
 
 temperaturas <- read.csv("temperaturas.csv", sep = "\t")
 temperaturas <- mutate(temperaturas, fecha=paste(dia,mes,anio, sep="-"))
 temperaturas <- mutate(temperaturas,fecha=dmy(fecha))
 
+
+temperaturas <- mutate(temperaturas,Nombre = ifelse(nroEstacion %in% 
+  c(1), "Carrasco,Canelones", ifelse(nroEstacion %in% c(2), 
+  "Melilla,Canelones", ifelse(nroEstacion %in% c(3), "Artigas, Artigas", 
+    ifelse(nroEstacion %in% c(4), "Coronado,Artigas", ifelse(nroEstacion %in% 
+      c(5), "Laguna de los Patos, Colonia", ifelse(nroEstacion %in% c(6), "Santa Bernardina,Durazno", 
+      ifelse(nroEstacion %in% c(7), "Florida,Florida", ifelse(nroEstacion %in% 
+        c(8), "Laguna del Sauce,Maldonado", ifelse(nroEstacion %in% c(9), 
+        "Melo, Cerro Largo", ifelse(nroEstacion %in% c(10), 
+          "Mercedes,Soriano", ifelse(nroEstacion %in% c(11), 
+          "Paso de los Toros, Tacuarembó", ifelse(nroEstacion %in% c(12), "Chacras de Paysandú, Paysandú", ifelse(nroEstacion %in%  c(13), "Prado,Montevideo", ifelse(nroEstacion %in% 
+            c(14), "Punta del Este, Maldonado", ifelse(nroEstacion %in% 
+            c(15), "Rivera,Rivera", ifelse(nroEstacion %in% 
+            c(16), "Ciudad de Rocha,Rocha", ifelse(nroEstacion %in% 
+            c(17), "Nueva Hesperides,Salto", ifelse(nroEstacion %in% 
+            c(18), "San José, San José", ifelse(nroEstacion %in% 
+            c(19), "Ciudad de Tacuarembó, Tacuarembó", ifelse(nroEstacion %in% 
+            c(20), "Nueva Hesperides,Salto",ifelse(nroEstacion %in% 
+            c(21), "Trinidad,Flores", ifelse(nroEstacion %in% 
+            c(22), "Young,Río Negro", ifelse(nroEstacion %in% 
+            c(23), "Lascano,Rocha", ifelse(nroEstacion %in% 
+            c(24), "El Semillero,Colonia", ifelse(nroEstacion %in% 
+            c(25), "Las Brujas,Canelones", "El Naranjal,Salto"))))))))))))))))))))))))))
+
+
 temperaturas <- mutate(temperaturas, Estacion = as.factor(temperaturas$nroEstacion)) %>% filter(mes %in% c(5,6,7,8,9) )
 
-ggplot(temperaturas,aes(x=fct_reorder(Estacion,tmin),tmin))+geom_boxplot()+labs(x="Numero de estación", y="temperatura mínima")
-
-# ordenar los boxplots no me ayuda a nada.
+ggplot(temperaturas,aes(Nombre,tmin))+geom_boxplot()+labs(x="Estación", y="temperatura mínima")+theme(axis.text.x = element_text(angle = 90, size = 8))
 
 
 ```
-En el boxplot observamos que tenemos outliers en varias estaciones, pero como lo que nos interesa es estudiar las temperaturas mínimas sólo miraremos a las estaciones 7,13,
-14, la cual presenta outliers en los mínimos.
+De la Figura 4 surge que tenemos outliers en varias estaciones, pero como lo que nos interesa es estudiar las temperaturas mínimas extremas sólo miraremos a las estaciones que presentan outliers en los mínimos, es decir las estaciones Floria, Prado y Punta del Este.
 
+Outlier de la estación Florida:
 
-
-Vemos para las estaciones 7, 13, 14 los valores de los autliers y en que fecha se dan:
 
 
 
@@ -160,105 +227,231 @@ temperaturas <- read.csv("temperaturas.csv", sep = "\t")
 temperaturas <- mutate(temperaturas, fecha=paste(dia,mes,anio, sep="-"))
 temperaturas <- mutate(temperaturas,fecha=dmy(fecha))
 
-estac <-filter(temperaturas,nroEstacion %in% c(7,13,14)) %>% filter(mes %in% c(5,6,7,8,9)) %>% filter(!is.na(tmin)) 
+estac <-filter(temperaturas,nroEstacion %in% c(7)) %>% filter(mes %in% c(5,6,7,8,9)) %>% filter(!is.na(tmin)) 
 df2 <- subset(estac, select = c(nroEstacion,tmin,fecha))
 df2 <- mutate(df2,fecha=as.character(fecha))
 options(xtable.comment = FALSE)
 
-group_by(df2,nroEstacion) %>% top_n(-3,tmin) %>% xtable() 
+group_by(df2,nroEstacion) %>% top_n(-1,tmin) %>% xtable() 
 
 
 ```
 
-
-Dado estos datos, buscamos para cada dìa una estaciòn cercana y comparamos los valores de temperatura para esos dias.
-
-
-Utilizando las coordenadas geogràficas asignaremos un departamento a cada estaciòn.
+La comparamos con la estación Durazno que se encuentre geográficamente cerca
 
 
-```{r,echo=FALSE}
+```{r,echo=FALSE,results='asis'}
 temperaturas <- read.csv("temperaturas.csv", sep = "\t")
 temperaturas <- mutate(temperaturas, fecha=paste(dia,mes,anio, sep="-"))
 temperaturas <- mutate(temperaturas,fecha=dmy(fecha))
 
-temperaturas <- mutate(temperaturas, departamento = ifelse(nroEstacion %in% 
-  c(1, 2, 25), "Canelones", ifelse(nroEstacion %in% c(13), 
-  "Montevideo", ifelse(nroEstacion %in% c(16, 26), "Rocha", 
-    ifelse(nroEstacion %in% c(3, 4), "Artigas", ifelse(nroEstacion %in% 
-      c(15), "Rivera", ifelse(nroEstacion %in% c(9), "Cerro Largo", 
-      ifelse(nroEstacion %in% c(5, 24), "Colonia", ifelse(nroEstacion %in% 
-        c(6), "Durazno", ifelse(nroEstacion %in% c(7), 
-        "Florida", ifelse(nroEstacion %in% c(8, 14), 
-          "Maldonado", ifelse(nroEstacion %in% c(10), 
-          "Soriano", ifelse(nroEstacion %in% c(11, 
-            19), "Tacuarembó", ifelse(nroEstacion %in% 
-            c(12), "Paysandú", ifelse(nroEstacion %in% 
-            c(17, 26), "Salto", ifelse(nroEstacion %in% 
-            c(18), "San José", ifelse(nroEstacion %in% 
-            c(20), "Treinta y Tres", ifelse(nroEstacion %in% 
-            c(21), "Flores", "Río Negro"))))))))))))))))))
 
-```
+temperaturas <- mutate(temperaturas,Nombre = ifelse(nroEstacion %in% 
+  c(1), "Carrasco,Canelones", ifelse(nroEstacion %in% c(2), 
+  "Melilla,Canelones", ifelse(nroEstacion %in% c(3), "Artigas, Artigas", 
+    ifelse(nroEstacion %in% c(4), "Coronado,Artigas", ifelse(nroEstacion %in% 
+      c(5), "Laguna de los Patos, Colonia", ifelse(nroEstacion %in% c(6), "Santa Bernardina,Durazno", 
+      ifelse(nroEstacion %in% c(7), "Florida,Florida", ifelse(nroEstacion %in% 
+        c(8), "Laguna del Sauce,Maldonado", ifelse(nroEstacion %in% c(9), 
+        "Melo, Cerro Largo", ifelse(nroEstacion %in% c(10), 
+          "Mercedes,Soriano", ifelse(nroEstacion %in% c(11), 
+          "Paso de los Toros, Tacuarembó", ifelse(nroEstacion %in% c(12), "Chacras de Paysandú, Paysandú", ifelse(nroEstacion %in%  c(13), "Prado,Montevideo", ifelse(nroEstacion %in% 
+            c(14), "Punta del Este, Maldonado", ifelse(nroEstacion %in% 
+            c(15), "Rivera,Rivera", ifelse(nroEstacion %in% 
+            c(16), "Ciudad de Rocha,Rocha", ifelse(nroEstacion %in% 
+            c(17), "Nueva Hesperides,Salto", ifelse(nroEstacion %in% 
+            c(18), "San José, San José", ifelse(nroEstacion %in% 
+            c(19), "Ciudad de Tacuarembó, Tacuarembó", ifelse(nroEstacion %in% 
+            c(20), "Nueva Hesperides,Salto",ifelse(nroEstacion %in% 
+            c(21), "Trinidad,Flores", ifelse(nroEstacion %in% 
+            c(22), "Young,Río Negro", ifelse(nroEstacion %in% 
+            c(23), "Lascano,Rocha", ifelse(nroEstacion %in% 
+            c(24), "El Semillero,Colonia", ifelse(nroEstacion %in% 
+            c(25), "Las Brujas,Canelones", "El Naranjal,Salto"))))))))))))))))))))))))))
 
-
-La estaciòn 13, que se encuentra en Montevideo la compararemos con la 18 en San Jose, la 14 con la 8 ya que las dos estàn en Maldonado y la 7 que està en Florida, la compararemos con la 21 que està en Flores.
-
-
-Comparamos la estacion 13-Montevideo con la 2-Canelones
-```{r,echo=FALSE,results='asis'}
-
- f <- filter(temperaturas,nroEstacion==2) %>% filter(fecha =="2007-08-21"| fecha =="2007-07-29"|fecha =="2009-07-31")
-options(xtable.comment = FALSE)
-f <- mutate(f,fecha=as.character(fecha))
-subset(f, select = c(nroEstacion,tmin,fecha,departamento)) %>% xtable()
-
-
-```
-
-
-Comparamos la estacion 14-Maldonado con la 8-Maldonado
-
-```{r,echo=FALSE,results='asis'}
-
- f <- filter(temperaturas,nroEstacion==8) %>% filter(fecha =="2011-07-08"| fecha =="2013-07-22"|fecha =="2013-08-23")
-options(xtable.comment = FALSE)
-f <- mutate(f,fecha=as.character(fecha))
-subset(f, select = c(nroEstacion,tmin,fecha,departamento)) %>% xtable()
-
-
-```
-
-comparamos estacion 7-Florida con estacion 6-durazno
-
-
-```{r,echo=FALSE,results='asis'}
 
  f <- filter(temperaturas,nroEstacion==6
-             ) %>% filter(fecha =="2012-07-30"| fecha =="2012-06-09"|fecha =="2012-07-28")
+             ) %>% filter(fecha =="2012-07-28")
 options(xtable.comment = FALSE)
 f <- mutate(f,fecha=as.character(fecha))
-subset(f, select = c(nroEstacion,tmin,fecha,departamento)) %>% xtable()
+subset(f, select = c(nroEstacion,tmin,fecha,Nombre)) %>% xtable()
 
 
 ```
 
 
 
-2012-06-09 \\ 
-  2 &   7 & -10.00 & 2012-07-28 \\ 
-  3 &   7 & -6.00 & 2012-07-30 
+Outlier para la estación Prado:
+
+
+```{r,warning=FALSE, echo=FALSE,results='asis'}
+
+temperaturas <- read.csv("temperaturas.csv", sep = "\t")
+temperaturas <- mutate(temperaturas, fecha=paste(dia,mes,anio, sep="-"))
+temperaturas <- mutate(temperaturas,fecha=dmy(fecha))
+
+estac <-filter(temperaturas,nroEstacion %in% c(13)) %>% filter(mes %in% c(5,6,7,8,9)) %>% filter(!is.na(tmin)) 
+df2 <- subset(estac, select = c(nroEstacion,tmin,fecha))
+df2 <- mutate(df2,fecha=as.character(fecha))
+options(xtable.comment = FALSE)
+
+group_by(df2,nroEstacion) %>% top_n(-1,tmin) %>% xtable() 
+
+
+```
+
+Lo comparamos con la estación Melilla de Canelones
+
+
+```{r,echo=FALSE,results='asis'}
+temperaturas <- read.csv("temperaturas.csv", sep = "\t")
+temperaturas <- mutate(temperaturas, fecha=paste(dia,mes,anio, sep="-"))
+temperaturas <- mutate(temperaturas,fecha=dmy(fecha))
+
+
+temperaturas <- mutate(temperaturas,Nombre = ifelse(nroEstacion %in% 
+  c(1), "Carrasco,Canelones", ifelse(nroEstacion %in% c(2), 
+  "Melilla,Canelones", ifelse(nroEstacion %in% c(3), "Artigas, Artigas", 
+    ifelse(nroEstacion %in% c(4), "Coronado,Artigas", ifelse(nroEstacion %in% 
+      c(5), "Laguna de los Patos, Colonia", ifelse(nroEstacion %in% c(6), "Santa Bernardina,Durazno", 
+      ifelse(nroEstacion %in% c(7), "Florida,Florida", ifelse(nroEstacion %in% 
+        c(8), "Laguna del Sauce,Maldonado", ifelse(nroEstacion %in% c(9), 
+        "Melo, Cerro Largo", ifelse(nroEstacion %in% c(10), 
+          "Mercedes,Soriano", ifelse(nroEstacion %in% c(11), 
+          "Paso de los Toros, Tacuarembó", ifelse(nroEstacion %in% c(12), "Chacras de Paysandú, Paysandú", ifelse(nroEstacion %in%  c(13), "Prado,Montevideo", ifelse(nroEstacion %in% 
+            c(14), "Punta del Este, Maldonado", ifelse(nroEstacion %in% 
+            c(15), "Rivera,Rivera", ifelse(nroEstacion %in% 
+            c(16), "Ciudad de Rocha,Rocha", ifelse(nroEstacion %in% 
+            c(17), "Nueva Hesperides,Salto", ifelse(nroEstacion %in% 
+            c(18), "San José, San José", ifelse(nroEstacion %in% 
+            c(19), "Ciudad de Tacuarembó, Tacuarembó", ifelse(nroEstacion %in% 
+            c(20), "Nueva Hesperides,Salto",ifelse(nroEstacion %in% 
+            c(21), "Trinidad,Flores", ifelse(nroEstacion %in% 
+            c(22), "Young,Río Negro", ifelse(nroEstacion %in% 
+            c(23), "Lascano,Rocha", ifelse(nroEstacion %in% 
+            c(24), "El Semillero,Colonia", ifelse(nroEstacion %in% 
+            c(25), "Las Brujas,Canelones", "El Naranjal,Salto"))))))))))))))))))))))))))
+
+
+ f <- filter(temperaturas,nroEstacion==2
+             ) %>% filter(fecha =="2009-07-31")
+options(xtable.comment = FALSE)
+f <- mutate(f,fecha=as.character(fecha))
+subset(f, select = c(nroEstacion,tmin,fecha,Nombre)) %>% xtable()
+
+
+```
+
+
+
+
+Outliers de la estacion Punta del Este
+
+```{r,warning=FALSE, echo=FALSE,results='asis'}
+
+temperaturas <- read.csv("temperaturas.csv", sep = "\t")
+temperaturas <- mutate(temperaturas, fecha=paste(dia,mes,anio, sep="-"))
+temperaturas <- mutate(temperaturas,fecha=dmy(fecha))
+
+estac <-filter(temperaturas,nroEstacion %in% c(14)) %>% filter(mes %in% c(5,6,7,8,9)) %>% filter(!is.na(tmin)) 
+df2 <- subset(estac, select = c(nroEstacion,tmin,fecha))
+df2 <- mutate(df2,fecha=as.character(fecha))
+options(xtable.comment = FALSE)
+
+group_by(df2,nroEstacion) %>% top_n(-2,tmin) %>% xtable() 
+
+
+```
+
+Comparamos con la otra estación Laguna del Sauce,Maldonado
+
+
+
+```{r,echo=FALSE,results='asis'}
+temperaturas <- read.csv("temperaturas.csv", sep = "\t")
+temperaturas <- mutate(temperaturas, fecha=paste(dia,mes,anio, sep="-"))
+temperaturas <- mutate(temperaturas,fecha=dmy(fecha))
+
+
+temperaturas <- mutate(temperaturas,Nombre = ifelse(nroEstacion %in% 
+  c(1), "Carrasco,Canelones", ifelse(nroEstacion %in% c(2), 
+  "Melilla,Canelones", ifelse(nroEstacion %in% c(3), "Artigas, Artigas", 
+    ifelse(nroEstacion %in% c(4), "Coronado,Artigas", ifelse(nroEstacion %in% 
+      c(5), "Laguna de los Patos, Colonia", ifelse(nroEstacion %in% c(6), "Santa Bernardina,Durazno", 
+      ifelse(nroEstacion %in% c(7), "Florida,Florida", ifelse(nroEstacion %in% 
+        c(8), "Laguna del Sauce,Maldonado", ifelse(nroEstacion %in% c(9), 
+        "Melo, Cerro Largo", ifelse(nroEstacion %in% c(10), 
+          "Mercedes,Soriano", ifelse(nroEstacion %in% c(11), 
+          "Paso de los Toros, Tacuarembó", ifelse(nroEstacion %in% c(12), "Chacras de Paysandú, Paysandú", ifelse(nroEstacion %in%  c(13), "Prado,Montevideo", ifelse(nroEstacion %in% 
+            c(14), "Punta del Este, Maldonado", ifelse(nroEstacion %in% 
+            c(15), "Rivera,Rivera", ifelse(nroEstacion %in% 
+            c(16), "Ciudad de Rocha,Rocha", ifelse(nroEstacion %in% 
+            c(17), "Nueva Hesperides,Salto", ifelse(nroEstacion %in% 
+            c(18), "San José, San José", ifelse(nroEstacion %in% 
+            c(19), "Ciudad de Tacuarembó, Tacuarembó", ifelse(nroEstacion %in% 
+            c(20), "Nueva Hesperides,Salto",ifelse(nroEstacion %in% 
+            c(21), "Trinidad,Flores", ifelse(nroEstacion %in% 
+            c(22), "Young,Río Negro", ifelse(nroEstacion %in% 
+            c(23), "Lascano,Rocha", ifelse(nroEstacion %in% 
+            c(24), "El Semillero,Colonia", ifelse(nroEstacion %in% 
+            c(25), "Las Brujas,Canelones", "El Naranjal,Salto"))))))))))))))))))))))))))
+
+
+ f <- filter(temperaturas,nroEstacion==16
+             ) %>% filter(fecha =="2013-07-22"|fecha=="2013-08-23")
+options(xtable.comment = FALSE)
+f <- mutate(f,fecha=as.character(fecha))
+subset(f, select = c(nroEstacion,tmin,fecha,Nombre)) %>% xtable()
+
+
+```
 
 
 
 
 
 
+Temperaturas mínimas registradas para cada estación -ubicación geografica( sur-centro-norte). Se agrega una variable mas
 
 
 
+```{r,echo=FALSE,results='asis'}
+temperaturas <- read.csv("temperaturas.csv", sep = "\t")
+temperaturas <- mutate(temperaturas, fecha=paste(dia,mes,anio, sep="-"))
+temperaturas <- mutate(temperaturas,fecha=dmy(fecha))
 
-Tabla de temperaturas mínimas por departamento: para ver si las mínimas se registraron en el mismo año y si hay una correlación de temperaturas y ubicación geografica( sur-centro-norte). Se agrega una variable mas
+
+temperaturas <- mutate(temperaturas,Nombre = ifelse(nroEstacion %in% 
+  c(1), "Carrasco,Canelones", ifelse(nroEstacion %in% c(2), 
+  "Melilla,Canelones", ifelse(nroEstacion %in% c(3), "Artigas, Artigas", 
+    ifelse(nroEstacion %in% c(4), "Coronado,Artigas", ifelse(nroEstacion %in% 
+      c(5), "Laguna de los Patos, Colonia", ifelse(nroEstacion %in% c(6), "Santa Bernardina,Durazno", 
+      ifelse(nroEstacion %in% c(7), "Florida,Florida", ifelse(nroEstacion %in% 
+        c(8), "Laguna del Sauce,Maldonado", ifelse(nroEstacion %in% c(9), 
+        "Melo, Cerro Largo", ifelse(nroEstacion %in% c(10), 
+          "Mercedes,Soriano", ifelse(nroEstacion %in% c(11), 
+          "Paso de los Toros, Tacuarembó", ifelse(nroEstacion %in% c(12), "Chacras de Paysandú, Paysandú", ifelse(nroEstacion %in%  c(13), "Prado,Montevideo", ifelse(nroEstacion %in% 
+            c(14), "Punta del Este, Maldonado", ifelse(nroEstacion %in% 
+            c(15), "Rivera,Rivera", ifelse(nroEstacion %in% 
+            c(16), "Ciudad de Rocha,Rocha", ifelse(nroEstacion %in% 
+            c(17), "Nueva Hesperides,Salto", ifelse(nroEstacion %in% 
+            c(18), "San José, San José", ifelse(nroEstacion %in% 
+            c(19), "Ciudad de Tacuarembó, Tacuarembó", ifelse(nroEstacion %in% 
+            c(20), "Nueva Hesperides,Salto",ifelse(nroEstacion %in% 
+            c(21), "Trinidad,Flores", ifelse(nroEstacion %in% 
+            c(22), "Young,Río Negro", ifelse(nroEstacion %in% 
+            c(23), "Lascano,Rocha", ifelse(nroEstacion %in% 
+            c(24), "El Semillero,Colonia", ifelse(nroEstacion %in% 
+            c(25), "Las Brujas,Canelones", "El Naranjal,Salto"))))))))))))))))))))))))))
+a <- group_by(temperaturas,Nombre) %>% slice(which.min(tmin))
+options(xtable.comment = FALSE)
+a <- mutate(a, fecha=as.character(fecha))
+subset(a,select=c(Nombre,tmin,fecha))%>% xtable() 
+
+```
+
+constatamos que los años mas fríos fueron 2012 y 2007
+
 
 detallar que departamentos son parte de cada grupo.
 
