@@ -20,87 +20,87 @@ temperaturas <- mutate(temperaturas,fecha=dmy(temperaturas$fecha))
 temperaturas <- subset(temperaturas, select = c(1,2,3,10,11) )
 
 ui <- navbarPage(theme = shinytheme("cerulean"),
-  title="Temperaturas mínimas del Uruguay",
-  
-  
-  tabPanel("Base de datos" , type= "tabset",
-           fluidRow(
-             h4("Se  cuenta  con  una  base  de  datos compuesta  por  registros  diarios  de  temperaturas  mínimas  de  26  estaciones  meteorológicas  de  Uruguay  para  el  período  2002-2014.  Los  datos  están  comprendidos  entre  el  1º  de  enero  de  2002  y  el  
-                31  de  diciembre  de  2014,  lo  cual  implica  un  total  de  4.526  observaciones  por  estación."),
-             fluidRow(
-               column(4,
-                      selectInput("nroest",
-                                  "Número de estación:",
-                                  c("Todas",
-                                    unique(as.character(temperaturas$nroEstacion))))
-               )
-             ),
-             column(12,
-                    dataTableOutput('table')
-             )
-             
-             
-             )),
-  
-  
-  tabPanel("Visualización",type="tabset",
-           
-           fluidRow(column(8,leafletOutput("mymap",height = 500)),
-                    
-                    br(),
-                    
-                    column( 3,selectizeInput(inputId = "estac",
-                                             label = "Número de estación",
-                                             choices=list("Carrasco,Canelones"=1, "Melilla,Canelones"=2, "Artigas, Artigas"=3, "Coronado, Artigas"=4, "Laguna de los Patos,Colonia"=5,"Santa Bernardina,Durazno"=6,"Florida,Florida"=7,
-                                                          "Laguna del Sauce,Maldonado"=8,"Melo, Cerro Largo"=9, "Mercedes,Soriano"=10,"Paso de los Toros, Tacuarembó"=11,"Chacras de Paysandú, Paysandú"=12,"Prado,Montevideo"=13,"Punta del Este, Maldonado"=14,"Rivera,Rivera"=15,"Ciudad de Rocha,Rocha"=16,"Nueva Hesperides,Salto"=17,"San José, San José"=18,"Ciudad de Tacuarembó, Tacuarembó"=19,"Treinta y Tres,Treinta y Tres"=20,"Trinidad,Flores"=21,
-                                                          "Young,Río Negro"=22,"Lascano,Rocha"=23, "El Semillero,Colonia"=24,"Las Brujas,Canelones"=25,"El Naranjal,Salto"=26),
-                                             selected = 2 ,
-                                             options = list(maxItems = 4L),
-                                             multiple = TRUE ),
+                 title="Temperaturas mínimas del Uruguay",
+                 
+                 
+                 tabPanel("Base de datos" , type= "tabset",
+                          fluidRow(
+                            h4("Se  cuenta  con  una  base  de  datos compuesta  por  registros  diarios  de  temperaturas  mínimas  de  26  estaciones  meteorológicas  de  Uruguay  para  el  período  2002-2014.  Los  datos  están  comprendidos  entre  el  1º  de  enero  de  2002  y  el  
+                               31  de  diciembre  de  2014,  lo  cual  implica  un  total  de  4.526  observaciones  por  estación."),
+                            fluidRow(
+                              column(4,
+                                     selectInput("nroest",
+                                                 "Número de estación:",
+                                                 c("Todas",
+                                                   unique(as.character(temperaturas$nroEstacion))))
+                              )
+                            ),
+                            column(12,
+                                   dataTableOutput('table')
+                            )
                             
                             
-                            sliderInput(inputId = "year",
-                                        label = "Año",
-                                        min =2004,
-                                        max = 2015,
-                                        value =c( 2002:2004) ),
+                            )),
+                 
+                 
+                 tabPanel("Visualización",type="tabset",
+                          
+                          fluidRow(column(8,leafletOutput("mymap",height = 500)),
+                                   
+                                   br(),
+                                   
+                                   column( 3,selectizeInput(inputId = "estac",
+                                                            label = "Número de estación",
+                                                            choices=list("Carrasco,Canelones"=1, "Melilla,Canelones"=2, "Artigas, Artigas"=3, "Coronado, Artigas"=4, "Laguna de los Patos,Colonia"=5,"Santa Bernardina,Durazno"=6,"Florida,Florida"=7,
+                                                                         "Laguna del Sauce,Maldonado"=8,"Melo, Cerro Largo"=9, "Mercedes,Soriano"=10,"Paso de los Toros, Tacuarembó"=11,"Chacras de Paysandú, Paysandú"=12,"Prado,Montevideo"=13,"Punta del Este, Maldonado"=14,"Rivera,Rivera"=15,"Ciudad de Rocha,Rocha"=16,"Nueva Hesperides,Salto"=17,"San José, San José"=18,"Ciudad de Tacuarembó, Tacuarembó"=19,"Treinta y Tres,Treinta y Tres"=20,"Trinidad,Flores"=21,
+                                                                         "Young,Río Negro"=22,"Lascano,Rocha"=23, "El Semillero,Colonia"=24,"Las Brujas,Canelones"=25,"El Naranjal,Salto"=26),
+                                                            selected = 2 ,
+                                                            options = list(maxItems = 4L),
+                                                            multiple = TRUE ),
+                                           
+                                           
+                                           sliderInput(inputId = "year",
+                                                       label = "Año",
+                                                       min =2004,
+                                                       max = 2015,
+                                                       value =c( 2002:2004) ),
+                                           
+                                           dateInput(inputId = "fe",
+                                                     label = "Seleccionar Fecha",
+                                                     value= "2012-05-01")
+                                   )
+                          ),
+                          hr(),
+                          
+                          fluidRow( column(1),
+                                    column(4,h2("Temperaturas minimas mensuales para las estaciones seleccionadas")
+                                    ),
+                                    column (1), column(4, h2("Temperaturas mínimas mensuales por Departamento"))),
+                          
+                          hr(),
+                          
+                          fluidRow(
                             
-                            dateInput(inputId = "fe",
-                                      label = "Seleccionar Fecha",
-                                      value= "2012-05-01")
-                    )
-           ),
-           hr(),
-           
-           fluidRow( column(1),
-                     column(4,h2("Temperaturas minimas mensuales para las estaciones seleccionadas")
-                     ),
-                     column (1), column(4, h2("Temperaturas mínimas mensuales por Departamento"))),
-           
-           hr(),
-           
-           fluidRow(
-             
-             column(6, plotOutput("serie")),
-             
-             column(6, plotlyOutput("Mapita"))
-           )),
-  
-  
-  
-  tabPanel ("Cambiar nombre", type="tabset",
-            
-            radioButtons("bloque", label = h3("Tamaño del bloque"), 
-                         choices = list("Un año" = 1, "Un mes" = 2),
-                         selected = 1),
-            
-            fluidRow( 
-              column(12,
-                     dataTableOutput('tablabloque')
-              )
-              
-              
-            )))
+                            column(6, plotOutput("serie")),
+                            
+                            column(6, plotlyOutput("Mapita"))
+                          )),
+                 
+                 
+                 
+                 tabPanel ("Cambiar nombre", type="tabset",
+                           
+                           radioButtons("bloque", label = h3("Tamaño del bloque"), 
+                                        choices = list("Un año" = 1, "Un mes" = 2),
+                                        selected = 1),
+                           
+                           fluidRow( 
+                             column(12,
+                                    dataTableOutput('tablabloque')
+                             )
+                             
+                             
+                           )))
 
 
 
