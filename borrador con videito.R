@@ -18,6 +18,7 @@ temperaturas <- read.csv("temperaturas.csv",sep="\t")
 temperaturas <- mutate(temperaturas, fecha=paste(dia,mes,anio, sep="-"))
 temperaturas <- mutate(temperaturas,fecha=dmy(temperaturas$fecha))
 temperaturas <- subset(temperaturas, select = c(1,2,3,10,11) )
+choices_month <- seq.Date(from = as.Date("2002-07-01"), by = "month", length.out = 150)
 
 
 sliderValues <- function (inputId,
