@@ -61,6 +61,7 @@ Sin embargo para la realización del proyecto las variables a utilizar son:
 * Coordenadas geograficas para un análisis espacial.
 * Departamento: asignada de acuerdo a la ubicación geográfica (latitud, longitud) de cada estación.
 * Creamos una variable con el nombre de cada estación.
+* Zona: creamos una variable categórica la cual clasifica a los departamentos en Centro, Norte o Sur. 
 
 
 
@@ -407,11 +408,10 @@ subset(f, select = c(nroEstacion,tmin,fecha,Nombre)) %>% xtable()
 ```
 
 
+Queremos ver si hay algún año en particular en el que se cumpla que todas las estaciones registraron su mínimo del periodo:
 
 
 
-
-Temperaturas mínimas registradas para cada estación -ubicación geografica( sur-centro-norte). Se agrega una variable mas
 
 
 
@@ -443,17 +443,77 @@ temperaturas <- mutate(temperaturas,Nombre = ifelse(nroEstacion %in%
             c(23), "Lascano,Rocha", ifelse(nroEstacion %in% 
             c(24), "El Semillero,Colonia", ifelse(nroEstacion %in% 
             c(25), "Las Brujas,Canelones", "El Naranjal,Salto"))))))))))))))))))))))))))
-a <- group_by(temperaturas,Nombre) %>% slice(which.min(tmin))
+
+temperaturas <- mutate(temperaturas,Zona = ifelse(nroEstacion %in% 
+  c(5,24,18,25,2,1,13,8,16,7), "SUR", ifelse(nroEstacion %in% c(11,10,21,22,6,20,23), 
+  "CENTRO","NORTE")))
+
+
+a <- group_by(temperaturas,nroEstacion) %>% slice(which.min(tmin)) %>% arrange(desc(tmin))
 options(xtable.comment = FALSE)
 a <- mutate(a, fecha=as.character(fecha))
-subset(a,select=c(Nombre,tmin,fecha))%>% xtable() 
+subset(a,select=c(Nombre,tmin,fecha,nroEstacion))%>% xtable() 
 
 ```
 
-constatamos que los años mas fríos fueron 2012 y 2007
+constatamos que los años mas fríos fueron 2012 y 2007.
 
 
-detallar que departamentos son parte de cada grupo.
+¿Hay alguna relación entre la zona y los mínimos registrados?
+
+
+
+```{r, echo=FALSE}
+cap5 <- "Se observalas temperaturas mínimas registradas por año en cada zona. En la mayoria de los años la tempreatura mínima del Sur son más altasque el Norte Y el Centro
+"
+
+```
+
+
+```{r,echo=FALSE,results='asis', fig.cap=cap5}
+temperaturas <- read.csv("temperaturas.csv", sep = "\t")
+temperaturas <- mutate(temperaturas, fecha=paste(dia,mes,anio, sep="-"))
+temperaturas <- mutate(temperaturas,fecha=dmy(fecha))
+
+
+temperaturas <- mutate(temperaturas,Nombre = ifelse(nroEstacion %in% 
+  c(1), "Carrasco,Canelones", ifelse(nroEstacion %in% c(2), 
+  "Melilla,Canelones", ifelse(nroEstacion %in% c(3), "Artigas, Artigas", 
+    ifelse(nroEstacion %in% c(4), "Coronado,Artigas", ifelse(nroEstacion %in% 
+      c(5), "Laguna de los Patos, Colonia", ifelse(nroEstacion %in% c(6), "Santa Bernardina,Durazno", 
+      ifelse(nroEstacion %in% c(7), "Florida,Florida", ifelse(nroEstacion %in% 
+        c(8), "Laguna del Sauce,Maldonado", ifelse(nroEstacion %in% c(9), 
+        "Melo, Cerro Largo", ifelse(nroEstacion %in% c(10), 
+          "Mercedes,Soriano", ifelse(nroEstacion %in% c(11), 
+          "Paso de los Toros, Tacuarembó", ifelse(nroEstacion %in% c(12), "Chacras de Paysandú, Paysandú", ifelse(nroEstacion %in%  c(13), "Prado,Montevideo", ifelse(nroEstacion %in% 
+            c(14), "Punta del Este, Maldonado", ifelse(nroEstacion %in% 
+            c(15), "Rivera,Rivera", ifelse(nroEstacion %in% 
+            c(16), "Ciudad de Rocha,Rocha", ifelse(nroEstacion %in% 
+            c(17), "Nueva Hesperides,Salto", ifelse(nroEstacion %in% 
+            c(18), "San José, San José", ifelse(nroEstacion %in% 
+            c(19), "Ciudad de Tacuarembó, Tacuarembó", ifelse(nroEstacion %in% 
+            c(20), "Nueva Hesperides,Salto",ifelse(nroEstacion %in% 
+            c(21), "Trinidad,Flores", ifelse(nroEstacion %in% 
+            c(22), "Young,Río Negro", ifelse(nroEstacion %in% 
+            c(23), "Lascano,Rocha", ifelse(nroEstacion %in% 
+            c(24), "El Semillero,Colonia", ifelse(nroEstacion %in% 
+            c(25), "Las Brujas,Canelones", "El Naranjal,Salto"))))))))))))))))))))))))))
+
+temperaturas <- mutate(temperaturas,Zona = ifelse(nroEstacion %in% 
+  c(5,24,18,25,2,1,13,8,16,7), "SUR", ifelse(nroEstacion %in% c(11,10,21,22,6,20,23), 
+  "CENTRO","NORTE")))
+
+
+a <- group_by(temperaturas,anio,Zona) %>% slice(which.min(tmin))
+  options(xtable.comment = FALSE)
+subset(a,select=c(anio,Zona,tmin))%>% xtable() 
+
+ggplot(a, aes(anio,tmin, colour=Zona))+geom_line()+labs(x="Año", y="Temperatura", title="Temperaturas mínimas por año y Zona")
+
+```
+
+
+
 
 hay correlacion entre las temperaturas mínimas y la altitud?
 
