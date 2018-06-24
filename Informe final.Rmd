@@ -3,6 +3,7 @@ title: "Proyecto Final-Temperaturas"
 author: "Luraghi-Rodriguez"
 date: "June 18, 2018"
 output: pdf_document
+bibliography: biblio.bib
 ---
 
 
@@ -574,12 +575,31 @@ Método "Block Maxima": Útil cuando los datos pueden ser divididos en m bloques
 La elección del tamaño del bloque genera un trade-off entre sesgo y varianza, tomar bloques pequeños generan un mayor sesgo mientras que bloques de mayor tamaño aumentan la varianza en la estimacion de los parametros de la distribución.
 
 
+---
+nocite: | 
+  @citaR, @leaf
+...
+
+
 
 
 
 ##Descripción de la aplicación shiny
 
-A través de la aplicación Shiny, mostraremos el análisis exploratorio de los datos, aparecerán gráficos de la serie de temperaturas, pudiendo filtrar por numero de estación, y pudiendo ubicar geograficamente las mismas. Para todo el territorio uruguayo se podrá observar por mes las temperaturas mínimas registradas en cada departamento.
+A través de la aplicación Shiny, mostraremos el análisis exploratorio interactivo.
+
+Se estructura en 4 pesatañas:
+
+Base de datos: En esta pesataña el usuario puede realizar múltiples filtraciones, (explicar)
+
+Visualización: Aqui introducimos la exploración espacial, donde se pueden seleccionar las estaciones y a través del paquete Leaflet de R , se despliega un mapa marcando geograficamente el punto donde se encuentra la estación.
+Por otro lado se ve también un mapa de la serie de temperaturas para las estaciones seleccionadas anteriomente, con la opción de poder elegir el periodo.
+En esta pesataña encontraremos un mapa del territorio uruguayo, el cual se encuentra coloreado por la temperatura mínima regsitrada en el mes para cada departamento. La escala de colores utilizada  ayuda a visualizar que departamentos registran temperaturas por encima de la media (rojos) y por debajo (azules) y con color blanco los que están sobre la media.
+
+
+
+
+, aparecerán gráficos de la serie de temperaturas, pudiendo filtrar por numero de estación, y pudiendo ubicar geograficamente las mismas. Para todo el territorio uruguayo se podrá observar por mes las temperaturas mínimas registradas en cada departamento.
 
 
 
@@ -596,6 +616,6 @@ A través de la aplicación Shiny, mostraremos el análisis exploratorio de los 
 
 ## Referencias
 
--coles
--R
--librerias
+
+
+
