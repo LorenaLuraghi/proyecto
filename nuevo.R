@@ -13,6 +13,8 @@ library(dplyr)
 library(plotly)
 library(scales)
 library(shinythemes)
+library(evd)
+library(ismev)
 
 temperaturas <- read.csv("temperaturas.csv",sep="\t")
 temperaturas <- mutate(temperaturas, fecha=paste(dia,mes,anio, sep="-"))
@@ -273,19 +275,63 @@ ui <- navbarPage(theme = shinytheme("cerulean"),
                  
                  
                  
-                 tabPanel ("Cambiar nombre", type="tabset",
+                 tabPanel ("Base de valores extremos", type="tabset",
                            
-                           radioButtons("bloque", label = h3("Tamaño del bloque"), 
-                                        choices = list("Un año" = 1, "Un mes" = 2),
-                                        selected = 1),
+                           fluidRow ( 
+                             column(5, h3("Seleccione el nombre de la estación y el método que desea utilizar:")),
+                             
+                             column(3,radioButtons("metodo", label="",
+                                                   choices = list("Método del Umbral", "Método Block Maxima"),
+                                                   selected ="Método del Umbral")),
+                             
+                             column( 3,selectizeInput(inputId = "estaciondata",
+                                                      label = "Estación",
+                                                      choices=list("Carrasco,Canelones"=1, "Melilla,Canelones"=2, "Artigas, Artigas"=3, "Coronado, Artigas"=4, "Laguna de los Patos,Colonia"=5,"Santa Bernardina,Durazno"=6,"Florida,Florida"=7,
+                                                                   "Laguna del Sauce,Maldonado"=8,"Melo, Cerro Largo"=9, "Mercedes,Soriano"=10,"Paso de los Toros, Tacuarembó"=11,"Chacras de Paysandú, Paysandú"=12,"Prado,Montevideo"=13,"Punta del Este, Maldonado"=14,"Rivera,Rivera"=15,"Ciudad de Rocha,Rocha"=16,"Nueva Hesperides,Salto"=17,"San José, San José"=18,"Ciudad de Tacuarembó, Tacuarembó"=19,"Treinta y Tres,Treinta y Tres"=20,"Trinidad,Flores"=21,
+                                                                   "Young,Río Negro"=22,"Lascano,Rocha"=23, "El Semillero,Colonia"=24,"Las Brujas,Canelones"=25,"El Naranjal,Salto"=26),
+                                                      selected = 2)
+                                     
+                                     
+                             ),
+                             
+                             column(3,conditionalPanel(
+                               condition = "input.metodo == 'Método del Umbral'",
+                               numericInput(inputId = 'umbral', label="Valor del Umbral", value=2)),
+                               conditionalPanel(
+                                 condition = "input.metodo == 'Método Block Maxima'",
+                                 
+                                 selectizeInput(inputId = 'tbloque', label="Tamaño del bloque", choices=c("Un mes","Un año"))))),
                            
-                           fluidRow( 
-                             column(12,
-                                    dataTableOutput('tablabloque')
-                             )
+                           fluidRow(h3("Información sobre la base de valores extremos:")),
+                           
+                           fluidRow(
+                             h4("Summary"),
+                             column(12,verbatimTextOutput("summary") )),
+                           
+                           fluidRow(  
+                             h4("Histograma"),
+                             column(12, plotOutput("histograma"))
+                           )),
+                 fluidRow(h3("Modelo para los datos")),
+                 
+                 fluidRow(conditionalPanel(
+                   condition = "input.metodo == 'Método del Umbral'",
+                   h4("Los datos siguen una distribución Pareto Generalizada."))),
+                 
+                 fluidRow(
+                   verbatimTextOutput("paramgev")
+                 ),
+                 
+                 fluidRow(
+                   
+                   plotOutput("plotajuste"))
+
+                 
+                 
+)
                              
                              
-                           )))
+                
 
 
 
@@ -591,6 +637,118 @@ server <- function(input,output,session){
     ## ~countunique$hover)
     
     ggplotly(g)
+  })
+  
+  output$summary <- renderPrint({
+    
+    if (input$metodo== "Método del Umbral") {
+      temperaturas <- read.csv("temperaturas.csv",sep="\t")
+      temperaturas <- mutate(temperaturas, fecha=paste(dia,mes,anio, sep="-"))
+      temperaturas <- mutate(temperaturas,fecha=dmy(temperaturas$fecha))
+      temperaturas <- subset(temperaturas, select = c(1,2,3,5,6,10,11) )
+      temperaturas <- temperaturas %>% mutate(tmin=-1*tmin) %>% filter(mes %in% 5:9) %>% filter(nroEstacion==input$estaciondata) %>% 
+        filter(!is.na(tmin)) %>% filter(tmin > -1*input$umbral)
+      
+      summary((temperaturas %>% mutate(tmin=-1*tmin))$tmin)
+    }
+    
+    else { 
+      temperaturas <- read.csv("temperaturas.csv",sep="\t")
+      temperaturas <- mutate(temperaturas, fecha=paste(dia,mes,anio, sep="-"))
+      temperaturas <- mutate(temperaturas,fecha=dmy(temperaturas$fecha))
+      temperaturas <- subset(temperaturas, select = c(1,2,3,5,6,10,11) )
+      temperaturas <- temperaturas %>% mutate(tmin=-1*tmin) %>% filter(mes %in% 5:9) %>% filter(nroEstacion==input $ estaciondata) %>% 
+        filter(!is.na(tmin))
+      
+      if (input$tbloque== "Un año") {
+        temperaturas <- temperaturas %>% group_by(anio) %>% summarise(max=max(tmin))
+        summary((temperaturas %>% mutate(max=-1*max))$max)
+      } 
+      else {temperaturas <- temperaturas %>% group_by(anio,mes) %>% summarise(max=max(tmin))
+      summary((temperaturas %>% mutate(max=-1*max))$max) }
+    }
+    
+  })
+  
+  output$histograma <-  renderPlot ({ 
+    
+    
+    if (input$metodo =="Método Block Maxima") { 
+      temperaturas <- read.csv("temperaturas.csv",sep="\t")
+      temperaturas <- mutate(temperaturas, fecha=paste(dia,mes,anio, sep="-"))
+      temperaturas <- mutate(temperaturas,fecha=dmy(temperaturas$fecha))
+      temperaturas <- subset(temperaturas, select = c(1,2,3,5,6,10,11) )
+      temperaturas <- temperaturas %>% mutate(tmin=-1*tmin) %>% filter(mes %in% 5:9) %>% filter(nroEstacion==input $ estaciondata) %>% 
+        filter(!is.na(tmin))
+      
+      if (input$tbloque== "Un año") {
+        temperaturas <- temperaturas %>% group_by(anio) %>% summarise(max=max(tmin))
+        temperaturas %>% ggplot(aes(-1*max)) + geom_histogram(bins=8) + labs(x="Temperatura mínima registrada agrupada en bloques de un año",y="Frecuencia")
+        
+      } 
+      else {temperaturas <- temperaturas %>% group_by(anio,mes) %>% summarise(max=max(tmin))
+      temperaturas %>% ggplot(aes(-1*max)) + geom_histogram(bins=14) + labs(x="Temperatura mínima registrada agrupada en bloques de un mes",y="Frecuencia")
+      }}
+    
+    
+    
+  })
+  
+  output$paramgev <-  renderPrint ({ 
+    if (input$metodo== "Método Block Maxima") {
+      temperaturas <- read.csv("temperaturas.csv",sep="\t")
+      temperaturas <- mutate(temperaturas, fecha=paste(dia,mes,anio, sep="-"))
+      temperaturas <- mutate(temperaturas,fecha=dmy(temperaturas$fecha))
+      temperaturas <- subset(temperaturas, select = c(1,2,3,5,6,10,11) )
+      temperaturas <- temperaturas %>% mutate(tmin=-1*tmin) %>% filter(mes %in% 5:9) %>% filter(nroEstacion==input $ estaciondata) %>% 
+        filter(!is.na(tmin))
+      
+      if (input$tbloque== "Un año") {
+        temperaturas <- temperaturas %>% group_by(anio) %>% summarise(max=max(tmin))
+        fit1 <- gev.fit(temperaturas$max)
+      } 
+      else {temperaturas <- temperaturas %>% group_by(anio,mes) %>% summarise(max=max(tmin))
+      fit1 <- gev.fit(temperaturas$max)
+      }
+      
+      
+    }
+    
+    
+    
+    
+    
+  })
+  
+  
+  
+  
+  
+  output$plotajuste <-  renderPlot ({ 
+    
+    
+    if (input$metodo=="Método Block Maxima") { 
+      temperaturas <- read.csv("temperaturas.csv",sep="\t")
+      temperaturas <- mutate(temperaturas, fecha=paste(dia,mes,anio, sep="-"))
+      temperaturas <- mutate(temperaturas,fecha=dmy(temperaturas$fecha))
+      temperaturas <- subset(temperaturas, select = c(1,2,3,5,6,10,11) )
+      temperaturas <- temperaturas %>% mutate(tmin=-1*tmin) %>% filter(mes %in% 5:9) %>% filter(nroEstacion==input $ estaciondata) %>% 
+        filter(!is.na(tmin))
+      
+      if (input$tbloque== "Un año") {
+        temperaturas <- temperaturas %>% group_by(anio) %>% summarise(max=max(tmin))
+        fit1 <- gev.fit(temperaturas$max)
+        gev.diag(fit1)
+        
+      } 
+      else {temperaturas <- temperaturas %>% group_by(anio,mes) %>% summarise(max=max(tmin))
+      fit1 <- gev.fit(temperaturas$max)
+      gev.diag(fit1)
+      
+      }}
+    
+    
+    
   })
   
   
