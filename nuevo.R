@@ -671,9 +671,19 @@ server <- function(input,output,session){
   })
   
   output$histograma <-  renderPlot ({ 
+    if (input$metodo== "Método del Umbral") {
+      temperaturas <- read.csv("temperaturas.csv",sep="\t")
+      temperaturas <- mutate(temperaturas, fecha=paste(dia,mes,anio, sep="-"))
+      temperaturas <- mutate(temperaturas,fecha=dmy(temperaturas$fecha))
+      temperaturas <- subset(temperaturas, select = c(1,2,3,5,6,10,11) )
+      temperaturas <- temperaturas %>% mutate(tmin=-1*tmin) %>% filter(mes %in% 5:9) %>% filter(nroEstacion==input$estaciondata) %>% 
+        filter(!is.na(tmin)) %>% filter(tmin > -1*input$umbral)
+      
+      temperaturas %>% ggplot(aes(-1*tmin)) + geom_histogram(bins=14) + labs(x="Temperatura mínima registrada menor que el umbral seleccionado", y="Frecuencia")
+    }
     
     
-    if (input$metodo =="Método Block Maxima") { 
+    else { 
       temperaturas <- read.csv("temperaturas.csv",sep="\t")
       temperaturas <- mutate(temperaturas, fecha=paste(dia,mes,anio, sep="-"))
       temperaturas <- mutate(temperaturas,fecha=dmy(temperaturas$fecha))
