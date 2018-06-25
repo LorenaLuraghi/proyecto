@@ -13,7 +13,7 @@ knitr::opts_chunk$set(echo = TRUE, tidy.opts = list(width.cutoff = 50), tidy = T
 
 ```
 
-###BORRADOR
+
 
 ## INTRODUCCION
 
@@ -23,14 +23,57 @@ Relaizar un análisis exploratorio de los datos utilizados para un proyecto cuyo
 de la teoría de valores extremos.
 
 La modelización de los eventos extremos climáticos resulta de particular interés en la actualidad, debido
-al gran impacto que estos fenómenos producen tanto en la población como en los sectores productivos.
-Estos últimos, que resultan especialmente sensibles a la variabilidad climática, adolecen en general de
-un conocimiento confiable sobre la ocurrencia de sucesos extremos y les es imprescindible asignarles
+al gran impacto que estos fenómenos producen tanto en la población, como en los sectores productivos. A modo de ejemplo, golpes de calor o frios extremos pueden afectar negativamente a las personas en situación de calle, o por otro lado arruinar cosechas enteras, motores de aviones, etc. 
+A pesar de la gran importancia de estos eventos, se adolece en general de un conocimiento confiable sobre la ocurrencia de sucesos extremos y les es imprescindible asignarles
 ciertas probabilidades de ocurrencia. 
 
 Uno de los objetivos específicos del proyecto sobre valores extremos consiste en comparar dos metodologías para la modelización, obteniendo predicciones de los niveles de retorno mediante el Método de Valores Extremos
-por Bloques y el Método del Umbral. Además, se busca contrastar los resultados obtenidos mediante el
-uso de los diversos paquetes del software estadístico R actualmente disponibles, por lo tanto realizaremos también la exploración de las bases de datos de valores extremos utilizadas para cada uno de los dos métodos mencionados.
+por Bloques y el Método del Umbral. Realizaremos también la exploración de las bases de datos de valores extremos utilizadas para cada uno de los dos métodos mencionados.
+
+#Metodologia.
+
+El interés de la Teoría de valores extremos está centrado en modelar el comportamiento de $M_n = max \{X_1,X_2, \ldots, X_n \}$ siendo $X_1,X_2, \ldots , X_n$ una secuencia de variables aleatorias independientes con distribución F, y M_n representa el maximo del proceso sobre n unidades de tiempos de observación. 
+
+En Teoría la distribución de $M_n$ podría calcularse de manera exacta a partir de la función de distribución F: 
+
+$P(M_n \leq z) = P(X_1 \leq z, \ldots , X_n \leq z = P(X_1 \leq z) \times \ldots \times P(X_n \leq z) = [F(z)]^n$
+            
+Sin embargo, al sustituir F (desconocida) por su estimación y elevar a la n, pueden generarse grandes discrepancias.
+
+Un camino alternativo a este problema, es considerar F desconocida y aproximar directamente la distribución de $F^n$ utilizando un subconjunto de la base, los valores extremos, para esto intentamos captar en una nueva base aquellos valores extremos sobre los cuales nos interesa trabajar. 
+
+Hay dos posibles métodos populares para la selección de la base mencionada:
+
+
+Método del umbral: Consiste en seleccionar un valor $u$ llamado umbral, y considerar aquellas observaciones que superen este valor. La elección de un umbral muy bajo aumentará el sesgo del modelo, mientras que la eleccion de un umbral demasiado alto aumentará la varianza.
+
+Método "Block Maxima": Útil cuando los datos pueden ser divididos en m bloques de tamaño m, el método consiste en seleccionar la temperatura extrema por bloque, asumiendo que las observaciones de los máximos por bloque son independientes.
+La elección del tamaño del bloque genera un trade-off entre sesgo y varianza, tomar bloques pequeños generan un mayor sesgo mientras que bloques de mayor tamaño aumentan la varianza en la estimacion de los parametros de la distribución.
+
+
+## Teorema de Valores extremos para el método del umbral
+
+Si existen sucesiones constantes $a_n > 0$ y $b_n$ tales que: 
+
+$P(M^*_n = \cfrac{M_n - b_n}{a_n} \leq z) = F^n(a_nz + b_n)\to G(z)$ 
+
+entonces G pertenece a una de las siguientes tres familias de distribuciones: Weibull, Gumbel o Fréchet.
+
+
+El Teorema (1.1) afirma que $M^*_n$ converge en distribución a una de las tres familias de distribuciones mencionadas en el teorema las que, en conjunto, se denominan distribuciones de valores extremos (DVE). Cada familia tiene un parámetro de ubicación y escala, $\mu$ y $\sigma$ respectivamente, y un parámetro de forma $\alpha$ en el caso de las familias Fréchet y Weibull. 
+
+Si bien el Teorema (1.1) no garantiza la existencia de un límite no degenerado para $M_n$, ni nos dice cuál es el límite cuando existe, la distribución límite de la variable normalizada $M^*_n$ tiene que ser alguna de las distribuciones incluidas en el teorema, cualquiera sea la distribución poblacional $F$.
+\
+
+Los tres tipos de distribución del teorema pueden ser combinados en una sola distribución con una parametrización común, propuesta por Von Mises (1954) y Jenkinson (1955), que se conoce como la \textbf{Distribución de Valores Extremos Generalizada} (GEV, por sus siglas en inglés). La forma de esta distribución es: 
+
+
+$G_{\xi,\mu,\sigma}(x) = exp\ \Big\{-\Big(1+\xi \Big(\cfrac{x-\mu}{\sigma}\Big)\Big)_+^{-1/ \xi}\Big\}$
+
+
+##Teorema de valores extremos para el método de Block Maxima
+
+De forma análoga que para el método del umbral, existe un teorema para el método Block Maxima, sin embargo la diferencia con el teorema anterior, es que ahora el ajuste de los datos se realizará mediante una distribución de Pareto Generalizada.
 
 
 
@@ -50,20 +93,27 @@ La base incluye las siguientes variables:
 * anio: Año en el cual se registró la temperatura
 * mes: Mes en el cual se registró la temperatura
 * dia: Día en el cual se registró la temperatura
-* tmin: valor en grados celsius de la temperatura mínima del día.
+* tmin: Valor en grados celsius de la temperatura mínima del día.
 * modis1: Temperatura registrada por satélite
 * modis2: Temperatura registrada por satélite 
 
-Sin embargo para la realización del proyecto las variables a utilizar son: 
+
+Nuevas variables creadas:
+
+* Departamento: se crea esta variable a partir de las coordenadas gegráficas de cada estación
+* Nombre: le asignamos a cada estación un nombre.
+* Zona: Clasificamos a cada estación en tres zonas(Centro, Norte, Sur) de acuerdo al departamento al que pertenece.
+* Fecha:para tener un orden cronológico, creamos esta nueva variable a partir de las variables año, mes y día 
+
+
+Para la realización del proyecto las variables a utilizar son: 
 
 * Número de estación
-* Fecha: para tener un orden cronológico, creamos esta nueva variable a partir de las variables año, mes y día
+* Fecha
 * Temperatura mínima registrada 
-* Coordenadas geograficas para un análisis espacial.
-* Departamento: asignada de acuerdo a la ubicación geográfica (latitud, longitud) de cada estación.
-* Creamos una variable con el nombre de cada estación.
-* Zona: creamos una variable categórica la cual clasifica a los departamentos en Centro, Norte o Sur. 
-
+* Departamento
+* Nombre
+* Zona
 
 
 ##ANALISIS EXPLORATORIO DE DATOS
@@ -85,9 +135,16 @@ library(tseries)
 library(xtable)
 library(forecast)
 library(dplyr)
+library(extRemes)
+library(evd)
+library(ismev)
+
 ```
 
-
+---
+nocite: | 
+  @citaR, @leaf,@citarmd,@plottly,@citalubri,@librogplot,@raster,@Shiny,@evd,@ismev
+...
 
 
 ```{r,echo=FALSE}
@@ -114,7 +171,7 @@ serie
 \newpage
 
 
-De acuerdo a la Figura \@ref(Figure 1), parecería que la media es constante. Calculemos la media de las temperaturas mínimas para cada año:
+De acuerdo a la Figura 1, parecería que la media es constante. Calculemos la media de las temperaturas mínimas para cada año:
 
 
 
@@ -131,7 +188,27 @@ mutate(temperaturas, fecha = dmy(temperaturas$fecha)) %>% group_by(Año=anio) %>
 
 
 ```
+\newpage
+
 Como se puede observar en la tabla, la temperatura mínima media año a año no sufre mucha variación, por lo que podríamos afirmar que es constante
+
+Analizamos los datos faltantes:
+
+
+```{r,results='asis',echo=FALSE}
+ temperaturas <- read.csv("temperaturas.csv",sep="\t")
+    temperaturas <- mutate(temperaturas, fecha=paste(dia,mes,anio, sep="-"))
+    temperaturas <- mutate(temperaturas,fecha=dmy(temperaturas$fecha))
+    temperaturas <- subset(temperaturas, select = c(1,2,3,5,6,10,11) )
+    options(xtable.comment = FALSE)
+ temperaturas %>% filter(is.na(tmin)) %>% group_by(nroEstacion) %>% 
+      summarise(porcentajeNA=round(n()*100/4565,1)) %>% arrange(porcentajeNA) %>% xtable()
+    
+```
+
+Las estaciones que presentan menos datos faltantes son la estación 3 (Artigas) y la 12 (Chacras de Paysandu).
+
+
 
 
 Analizaremos como es el comportamiento de la temperatura dentro del año para una estación en particular. Elegimos la estación número 2, la cual corresponde a la estación de Melilla, Canelones.
@@ -413,9 +490,6 @@ Queremos ver si hay algún año en particular en el que se cumpla que todas las 
 
 
 
-
-
-
 ```{r,echo=FALSE,results='asis'}
 temperaturas <- read.csv("temperaturas.csv", sep = "\t")
 temperaturas <- mutate(temperaturas, fecha=paste(dia,mes,anio, sep="-"))
@@ -516,73 +590,6 @@ ggplot(a, aes(anio,tmin, colour=Zona))+geom_line()+labs(x="Año", y="Temperatura
 
 
 
-hay correlacion entre las temperaturas mínimas y la altitud?
-
-
-Plot de temperatura mínima registrada en cada año, (puede ser un plotly) coloreado por zona de estación. La idea es explorar si los mínimos siempre se dan en la misma zona o no. si hay una correlación.
-
-
-Exploración espacial:
-
-Se presentan dos mapas, uno en el cual se ubican las estaciones seleccionadas y otro que muestra las temperaturas mínimas por mes en cada departamento coloreado por las temperaturas.
-
-
-
-#Metodologia.
-
-El interés de la Teoría de valores extremos está centrado en modelar el comportamiento de $M_n = max \{X_1,X_2, \ldots, X_n \} $ siendo $X_1,X_2, \ldots , X_n$ una secuencia de variables aleatorias independientes con distribución F, y M_n representa el maximo del proceso sobre n unidades de tiempos de observación. 
-
-En Teoría la distribución de $M_n$ podría calcularse de manera exacta a partir de la función de distribución F: 
-
-$P(M_n \leq z) = P(X_1 \leq z, \ldots , X_n \leq z = P(X_1 \leq z) \times \ldots \times P(X_n \leq z) = [F(z)]^n$
-            
-Sin embargo, al sustituir F (desconocida) por su estimación y elevar a la n, pueden generarse grandes discrepancias.
-
-Un camino alternativo a este problema, es considerar F desconocida y aproximar directamente la distribución de $F^n$ utilizando un subconjunto de la base, los valores extremos. 
-
-Esta solución, análoga al Teorema Central del Límite, consiste en la busqueda de secuencias constantes $\{b_n; n \geq 1 \}$ y $\{a_n; n \geq 1 \}$ tales que la distribución de $M_n^* = \frac{M_n - b_n}{a_n}$ converge a una distribución no degenerada cuando $n \to + \inf$ .
-
-## Teorema de Valores extremos: 
-
-Si existen sucesiones constantes $a_n > 0$ y $b_n$ tales que: 
-
-$P(M^*_n = \cfrac{M_n - b_n}{a_n} \leq z) = F^n(a_nz + b_n)\to G(z)$ 
-
-entonces G pertenece a una de las siguientes familias: 
-
-#################################################
-
-El Teorema (1.1) afirma que $M^*_n$ converge en distribución a una de las tres familias de distribuciones mencionadas en el teorema las que, en conjunto, se denominan distribuciones de valores extremos (DVE). En particular, $(a)$ es la distribución de Gumbel, $(b)$ es la distribución de Fréchet y $(c)$ es la distribución de Weibull. Cada familia tiene un parámetro de ubicación y escala, $\mu$ y $\sigma$ respectivamente, y un parámetro de forma $\alpha$ en el caso de las familias Fréchet y Weibull. 
-
-Si bien el Teorema (1.1) no garantiza la existencia de un límite no degenerado para $M_n$, ni nos dice cuál es el límite cuando existe, la distribución límite de la variable normalizada $M^*_n$ tiene que ser alguna de las distribuciones incluidas en el teorema, cualquiera sea la distribución poblacional $F$.
-\\
-
-Los tres tipos de distribución del teorema pueden ser combinados en una sola distribución con una parametrización común, propuesta por Von Mises (1954) y Jenkinson (1955), que se conoce como la \textbf{Distribución de Valores Extremos Generalizada} (GEV, por sus siglas en inglés). La forma de esta distribución es: 
-
-
-$G_{\xi,\mu,\sigma}(x) = exp\ \Big\{-\Big(1+\xi \Big(\cfrac{x-\mu}{\sigma}\Big)\Big)_+^{-1/ \xi}\Big\}$
-
-
-
-
-
-En los siguientes métodos asumiremos que la función F (distribución de los daots) es desconocida, y estimaremos directamente la distribución extrema, para esto intentamos captar en una nueva base aquellos valores extremos sobre los cuales nos interesa trabajar.
-
-
-Método del umbral: Consiste en seleccionar un valor u llamado umbral, y considerar aquellas observaciones que superen este valor. La elección de un umbral muy bajo aumentará el sesgo del modelo, mientras que la eleccion de un umbral demasiado alto aumentará la varianza.
-
-Método "Block Maxima": Útil cuando los datos pueden ser divididos en m bloques de tamaño m, el método consiste en seleccionar la temperatura extrema por bloque, asumiendo que las observaciones de los máximos por bloque son independientes.
-La elección del tamaño del bloque genera un trade-off entre sesgo y varianza, tomar bloques pequeños generan un mayor sesgo mientras que bloques de mayor tamaño aumentan la varianza en la estimacion de los parametros de la distribución.
-
-
----
-nocite: | 
-  @citaR, @leaf
-...
-
-
-
-
 
 ##Descripción de la aplicación shiny
 
@@ -596,22 +603,67 @@ Visualización: Aqui introducimos la exploración espacial, donde se pueden sele
 Por otro lado se ve también un mapa de la serie de temperaturas para las estaciones seleccionadas anteriomente, con la opción de poder elegir el periodo.
 En esta pesataña encontraremos un mapa del territorio uruguayo, el cual se encuentra coloreado por la temperatura mínima regsitrada en el mes para cada departamento. La escala de colores utilizada  ayuda a visualizar que departamentos registran temperaturas por encima de la media (rojos) y por debajo (azules) y con color blanco los que están sobre la media.
 
-
-
-
-, aparecerán gráficos de la serie de temperaturas, pudiendo filtrar por numero de estación, y pudiendo ubicar geograficamente las mismas. Para todo el territorio uruguayo se podrá observar por mes las temperaturas mínimas registradas en cada departamento.
-
+![](mapas.jpg)
 
 
 
 
+#Base de datos de valores extremos:
+
+Para llevar a cabo ambos métodos mencionados en la metodología (Block Maxima y Umbral) nos generamos una base donde intentamos captar los valores extremos. Incorporamos una nueva página en la Shiny, la cual nos da la opcion de elegir el método. Una vez seleccionado, si deseamos trabajar con Block Maxima, podemos elegir el tamaño de los bloques entre dos opciones: que cada año sea un bloque, o un bloque por mes. Por otro lado si decidimos utilizar el Método del Umbral, la app nos permite seleccionar el valor entero que deseemos como valor $u$
+
+##Análisis exploratorio:
+
+Realizamos un pequeño análisis exploratorio de las nuevas bases de datos, en primer instancia se puede observar la base completa, la cual no contendrá muchas observaciones ya que se está trabajando solo con los datos extremos. 
+Por otro lado, la Shiny nos muestra un summary para conocer un poco la distribución de los datos, asi como también un histograma para ayudar la visualización.
+
+A modo de ejemplo, veamos el summary y el histograma para el método de Block Maxima, de la estación número 2, utilizando como tamaño del bloque un mes.
+
+```{r, echo="FALSE"}
+temperaturas <- read.csv("temperaturas.csv",sep="\t")
+      temperaturas <- mutate(temperaturas, fecha=paste(dia,mes,anio, sep="-"))
+      temperaturas <- mutate(temperaturas,fecha=dmy(temperaturas$fecha))
+      temperaturas <- subset(temperaturas, select = c(1,2,3,5,6,10,11) )
+      temperaturas <- temperaturas %>% mutate(tmin=-1*tmin) %>% filter(mes %in% 5:9) %>% filter(nroEstacion==2) %>% 
+        filter(!is.na(tmin))
+      temperaturas <- temperaturas %>% group_by(anio,mes) %>% summarise(max=max(tmin))
+      temperaturas %>% ggplot(aes(-1*max)) + geom_histogram(bins=14) + labs(x="Temperatura mínima registrada agrupada en bloques de un mes",y="Frecuencia")
+      summary((temperaturas %>% mutate(max=-1*max))$max)
+```
+
+##Ajuste de los datos 
+
+Luego de realizar la pequeña exploracion de los datos, pasamos al ajuste.
+
+Para el Método del umbral, utilizamos la función "fevd", del paquete "extRemes", la cuál realiza el ajuste de la distribución para datos de valores extremos. Como argumento, la función nos exige el tipo de familia por el cual vamos a modelizar, y siguiendo el teorema de valores extremos para el método del Umbral, la familia que seleccionamos es la de Pareto Generalizada.
+
+Por otro lado, para el Método Block Máxima, realizamos el ajuste a través de los paquetes "evd" e "ismev", además de obtener los parámetros de la familia de distribución GEV, a través de los cuales podemos identificar si el ajuste se hace a través de una Frechet, Gumbell o Weibull, realizamos cuatro plots con el objetivo de evaluar el ajuste.
+
+En los dos plots superiores, comparamos las probabilidades y los cuantiles empíricos con los del modelo.
+En el plot inferior izquierdo podemos observar en el gráfico el nivel de retorno, el cual se interpreta de la siguiente forma: se espera que el nivel $z_p$ sea excedido en promedio una vez cada $1/p$ unidades de tiempo, es decir, $z_p$ será excedido en una unidad de tiempo con probabilidad $p$.
+Por último, en el extremo inferior derecho comparamos el histograma empírico con la función de distribución.
+
+```{r}
+fit1 <- gev.fit(temperaturas$max)
+      gev.diag(fit1)
+```
+#Video:
+Se presenta para el mismo mapa anteriormente creado, una animación donde se puede observar a lo largo de un año, como van cambiando las temperaturas para los distintos meses en cada departamento.
 
 
 
 
 ##Comentarios finales
 
+1. Se observa una fuerte estacionalidad en la serie de las temperaturas, y media constante, lo cual indica que no hay una tendencia clara.
 
+2. Observamos la presencia de tres outliers de temperaturas mínimas, que son aquellos de interés para la futura investigación. 
+
+3. Los años más frios fueron el 2007 y el 2012, mientras que espacialmente se observa una clara diferencia de temperaturas entre sur con centro y norte, 
+
+4.Las estaciones que tienen menos NAs son: Chacras de Paysandú y Artigas.
+
+5.Las amplitudes térmicas son más grandes en el norte que en el sur. Esto es debido a que en el sur, el agua del Río de la Plata y del Océano Atlántico actúan como reguladores térmicos.
 
 
 ## Referencias
